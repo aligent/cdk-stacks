@@ -1,8 +1,8 @@
 {
-  "name": "@aligent/cdk-serverless-deploy-iam",
+  "name": "@aligent/cloudwatch-rds-alert",
   "version": "0.1.0",
-  "description": "Provision a CloudFormation IAM role with the required permissions to deploy a standard Serverless application",
-  "main": "bin/app.ts",
+  "description": "Creates CloudWatch alerts for a given RDS instances and configure Slack notification for them",
+  "bin": "bin/app.ts",
   "private": true,
   "scripts": {
     "build": "tsc",
@@ -18,5 +18,5 @@
   "bugs": {
     "url": "https://github.com/aligent/cdk-stacks/issues"
   },
-  "homepage": "https://github.com/aligent/cdk-stacks/tree/main/packages/serverless-deploy-iam#readme"
+  "homepage": "https://github.com/aligent/cdk-stacks/tree/main/packages/cloudwatch-rds-alert#readme"
 }

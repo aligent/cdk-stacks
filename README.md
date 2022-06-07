@@ -8,3 +8,5 @@ Stack | Description
 [eventbridge-iam](eventbridge-packages/eventbridge-iam) |
 [pipeline-stack](packages/pipeline-stack) |
 [stack-deploy-iam](packages/stack-deploy-iam) |
+[serverless-deploy-iam](packages/serverless-deploy-iam) |
+
