@@ -2,7 +2,7 @@
   "name": "@aligent/cloudwatch-rds-alert",
   "version": "0.1.0",
   "description": "Creates CloudWatch alerts for a given RDS instances and configure Slack notification for them",
-  "bin": "bin/app.ts",
+  "bin": "app/bin/app.ts",
   "private": true,
   "scripts": {
     "build": "tsc",

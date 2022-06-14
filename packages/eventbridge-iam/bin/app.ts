@@ -1,12 +1,13 @@
 #!/usr/bin/env node
-import * as cdk from '@aws-cdk/core';
-import * as ssm from '@aws-cdk/aws-ssm';
+import { Construct } from 'constructs';
+import * as cdk from 'aws-cdk-lib/core';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { 
    PolicyStatement, 
    Effect,
    Group,
    User
-} from '@aws-cdk/aws-iam';
+} from 'aws-cdk-lib/aws-iam';
 
 const EVENT_SOURCE = process.env.EVENT_SOURCE
 if (!EVENT_SOURCE) {
@@ -15,7 +16,7 @@ if (!EVENT_SOURCE) {
 const HYPHENATED_EVENT_SOURCE = EVENT_SOURCE.split('.').join('-');
 class EventBridgeIAM extends cdk.Stack {
 
-     constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+     constructor(scope: Construct, id: string, props?: cdk.StackProps) {
           super(scope, id, props);
 
           // Version will be used for auditing which role is being used by projects.
