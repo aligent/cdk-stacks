@@ -140,6 +140,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                          "lambda:RemovePermission",
                          "lambda:InvokeFunction",
                          "lambda:ListTags",
+                         "lambda:TagResource",
                          "lambda:PutFunctionConcurrency"
                     ]
                })
