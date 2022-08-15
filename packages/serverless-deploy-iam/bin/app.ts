@@ -30,7 +30,7 @@ export class ServiceDeployIAM extends cdk.Stack {
 
           const cloudFormationResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_FORMATION', `arn:aws:cloudformation:${region}:${accountId}:stack`, [`${serviceName}*`]);
           const s3BucketResources = ServiceDeployIAM.formatResourceQualifier('S3', `arn:aws:s3:::`, [`${serviceName}*`, `${serviceName}*/*`], "");
-          const cloudWatchResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_WATCH', `arn:aws:logs:${region}:${accountId}:log-group:`, [`aws/lambda/${serviceName}*`]);
+          const cloudWatchResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_WATCH', `arn:aws:logs:${region}:${accountId}:log-group:`, [`aws/lambda/${serviceName}*`, aws/apigateway/${serviceName}*]);
           const lambdaResources = ServiceDeployIAM.formatResourceQualifier('LAMBDA', `arn:aws:lambda:${region}:${accountId}:function:`, [`${serviceName}*`], '');
           const stepFunctionResources = ServiceDeployIAM.formatResourceQualifier('STEP_FUNCTION', `arn:aws:states:${region}:${accountId}:stateMachine:`, [`${serviceName}*`], "");
           const dynamoDbResources = ServiceDeployIAM.formatResourceQualifier('DYNAMO_DB', `arn:aws:dynamodb:${region}:${accountId}:table`, [`${serviceName}*`]);
@@ -408,7 +408,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     ]
                })
           );
-          
+
           // The serverless-api-gateway-throttling requires PATCH access using the deploy user to update maxRequestsPerSecond and maxConcurrentRequests
           deployGroup.addToPolicy(
                new PolicyStatement({
@@ -419,7 +419,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     ]
                })
           );
-          
+
           if (process.env.ALLOW_DEPLOY_INVOCATION) {
                deployGroup.addToPolicy(
                     new PolicyStatement({
