@@ -266,6 +266,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                          "sns:CreateTopic",
                          "sns:DeleteTopic",
                          "sns:Subscribe",
+                         "sns:Unsubscribe",
+                         "sns:ListSubscriptionsByTopic"
                     ]
                })
           );
