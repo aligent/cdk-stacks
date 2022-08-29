@@ -108,7 +108,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     resources: cloudWatchResources,
                     actions: [
                          "logs:CreateLogGroup",
-                         "logs:DescribeLogGroup",
+                         "logs:DescribeLogGroups",
                          "logs:DeleteLogGroup",
                          "logs:CreateLogStream",
                          "logs:DescribeLogStreams",
