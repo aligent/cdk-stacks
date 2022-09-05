@@ -26,20 +26,20 @@ export class ServiceDeployIAM extends cdk.Stack {
           const version = '1'
           const serviceName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX,'');
           const accountId = cdk.Stack.of(this).account;
-          const region = cdk.Stack.of(this).region
+          const region = cdk.Stack.of(this).region;
 
-          const cloudFormationResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_FORMATION', `arn:aws:cloudformation:${region}:${accountId}:stack`, [`${serviceName}*`]);
-          const s3BucketResources = ServiceDeployIAM.formatResourceQualifier('S3', `arn:aws:s3:::`, [`${serviceName}*`, `${serviceName}*/*`], "");
-          const cloudWatchResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_WATCH', `arn:aws:logs:${region}:${accountId}:log-group:`, [`aws/lambda/${serviceName}*`, `aws/apigateway/${serviceName}*`]);
-          const lambdaResources = ServiceDeployIAM.formatResourceQualifier('LAMBDA', `arn:aws:lambda:${region}:${accountId}:function:`, [`${serviceName}*`], '');
-          const stepFunctionResources = ServiceDeployIAM.formatResourceQualifier('STEP_FUNCTION', `arn:aws:states:${region}:${accountId}:stateMachine:`, [`${serviceName}*`], "");
-          const dynamoDbResources = ServiceDeployIAM.formatResourceQualifier('DYNAMO_DB', `arn:aws:dynamodb:${region}:${accountId}:table`, [`${serviceName}*`]);
-          const iamResources = ServiceDeployIAM.formatResourceQualifier('IAM', `arn:aws:iam::${accountId}:role`, [`${serviceName}*`]);
-          const eventBridgeResources = ServiceDeployIAM.formatResourceQualifier('EVENT_BRIDGE', `arn:aws:events:${region}:${accountId}`, [`rule/${serviceName}*`, `event-bus/${serviceName}*`], ":");
-          const apiGatewayResources = ServiceDeployIAM.formatResourceQualifier('API_GATEWAY', `arn:aws:apigateway:${region}::`, [`*`]);
-          const ssmDeploymentResources = ServiceDeployIAM.formatResourceQualifier('SSM', `arn:aws:ssm:${region}:${accountId}:parameter`, [`${serviceName}*`]);
-          const snsResources = ServiceDeployIAM.formatResourceQualifier('SNS', `arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`], "");
-          const sqsResources = ServiceDeployIAM.formatResourceQualifier('SQS', `arn:aws:sqs:${region}:${accountId}:`, [`${serviceName}*`], "");
+          const cloudFormationResources = this.formatResourceQualifier('CLOUD_FORMATION', `arn:aws:cloudformation:${region}:${accountId}:stack`, [`${serviceName}*`]);
+          const s3BucketResources = this.formatResourceQualifier('S3', `arn:aws:s3:::`, [`${serviceName}*`, `${serviceName}*/*`], "");
+          const cloudWatchResources = this.formatResourceQualifier('CLOUD_WATCH', `arn:aws:logs:${region}:${accountId}:log-group:`, [`aws/lambda/${serviceName}*`, `aws/apigateway/${serviceName}*`]);
+          const lambdaResources = this.formatResourceQualifier('LAMBDA', `arn:aws:lambda:${region}:${accountId}:function:`, [`${serviceName}*`], '');
+          const stepFunctionResources = this.formatResourceQualifier('STEP_FUNCTION', `arn:aws:states:${region}:${accountId}:stateMachine:`, [`${serviceName}*`], "");
+          const dynamoDbResources = this.formatResourceQualifier('DYNAMO_DB', `arn:aws:dynamodb:${region}:${accountId}:table`, [`${serviceName}*`]);
+          const iamResources = this.formatResourceQualifier('IAM', `arn:aws:iam::${accountId}:role`, [`${serviceName}*`]);
+          const eventBridgeResources = this.formatResourceQualifier('EVENT_BRIDGE', `arn:aws:events:${region}:${accountId}`, [`rule/${serviceName}*`, `event-bus/${serviceName}*`], ":");
+          const apiGatewayResources = this.formatResourceQualifier('API_GATEWAY', `arn:aws:apigateway:${region}::`, [`*`]);
+          const ssmDeploymentResources = this.formatResourceQualifier('SSM', `arn:aws:ssm:${region}:${accountId}:parameter`, [`${serviceName}*`]);
+          const snsResources = this.formatResourceQualifier('SNS', `arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`], "");
+          const sqsResources = this.formatResourceQualifier('SQS', `arn:aws:sqs:${region}:${accountId}:`, [`${serviceName}*`], "");
 
           const serviceRole = new Role(this, `ServiceRole-v${version}`, {
                assumedBy: new CompositePrincipal(
@@ -469,7 +469,14 @@ export class ServiceDeployIAM extends cdk.Stack {
 
      // Takes an array of qualifiers and prepends the prefix to each, returning the resulting array
      // Tests for injected resource qualifiers and adds these.
-     static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[], delimiter: string = "/"): string[] {
+     // Also creates a parameter in CloudFormation
+     formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[], delimiter: string = "/"): string[] {
+          new ssm.StringParameter(this, `${serviceName}_QUALIFIER`, {
+               parameterName: `${serviceName}_QUALIFIER`,
+               description: `Custom qualifier values provided for ${serviceName}`,
+               stringValue: process.env[`${serviceName}_QUALIFIER`] || ""
+          });
+
           return [
                ...qualifiers,
                ...process.env[`${serviceName}_QUALIFIER`]?.split(",") || []
