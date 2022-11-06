@@ -239,7 +239,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                          "events:PutTargets",
                          "events:RemoveTargets",
                          "events:DeleteRule",
-                         "events:CreateEventBus"
+                         "events:CreateEventBus",
+                         "events:TagResource"
                     ]
                })
           );
