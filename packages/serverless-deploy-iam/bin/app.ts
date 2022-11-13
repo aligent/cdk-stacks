@@ -70,7 +70,7 @@ export class ServiceDeployIAM extends cdk.Stack {
 
 
           if (SHARED_VPC_ID) {
-               // Secutiry Groups
+               // Security Groups
                serviceRole.addToPolicy(
                     new PolicyStatement({
                          effect: Effect.ALLOW,
@@ -239,7 +239,9 @@ export class ServiceDeployIAM extends cdk.Stack {
                          "events:PutTargets",
                          "events:RemoveTargets",
                          "events:DeleteRule",
-                         "events:CreateEventBus"
+                         "events:CreateEventBus",
+                         "events:DescribeEventBus",
+                         "events:TagResource"
                     ]
                })
           );
