@@ -9,14 +9,14 @@ import {
      Effect,
      Group,
      User,
-     Condition
+     Conditions
 } from '@aws-cdk/aws-iam';
 
 interface Policy {
      name: string
      effect?: Effect
      actions?: string[]
-     conditions?: Condition
+     conditions?: Conditions
 }
 
 interface QualifierPolicy extends Policy {
@@ -59,7 +59,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           const accountId = cdk.Stack.of(this).account;
           const region = cdk.Stack.of(this).region;
 
-          const serviceRole = {
+          const serviceRole : PolicyStore = {
                type: new Role(this, `ServiceRole-v${version}`, {
                     assumedBy: new CompositePrincipal(
                          new ServicePrincipal('cloudformation.amazonaws.com'),
@@ -258,7 +258,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                ]);
           }
 
-          const serviceGroup = {
+          const serviceGroup : PolicyStore = {
                type: new Group(this, `${serviceName}-deployers`),
                policies: [
                     {
