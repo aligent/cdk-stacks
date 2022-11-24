@@ -59,7 +59,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           const accountId = cdk.Stack.of(this).account;
           const region = cdk.Stack.of(this).region;
 
-          const serviceRole : PolicyStore = {
+          const serviceRole: PolicyStore = {
                type: new Role(this, `ServiceRole-v${version}`, {
                     assumedBy: new CompositePrincipal(
                          new ServicePrincipal('cloudformation.amazonaws.com'),
@@ -258,7 +258,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                ]);
           }
 
-          const serviceGroup : PolicyStore = {
+          const serviceGroup: PolicyStore = {
                type: new Group(this, `${serviceName}-deployers`),
                policies: [
                     {
@@ -365,15 +365,23 @@ export class ServiceDeployIAM extends cdk.Stack {
                serviceGroup
           ]
 
+          const parameters = new Map<string, ssm.StringParameter>();
+
           this.policyStores.forEach(store => {
                store.policies.forEach(policy => {
-                    const parameterQualifiers = new ssm.StringParameter(this, `${policy.name}_QUALIFIER`, {
-                         parameterName: `${policy.name}_QUALIFIER`,
-                         description: `Custom qualifier values provided for ${policy.name}`,
-                         stringValue: ""
-                    });
+                    if (parameters.has(`${policy.name}_QUALIFIER`)) {
+                         parameters.set(`${policy.name}_QUALIFIER`,
+                              new ssm.StringParameter(this, `${policy.name}_QUALIFIER`, {
+                                   parameterName: `${policy.name}_QUALIFIER`,
+                                   description: `Custom qualifier values provided for ${policy.name}`,
+                                   stringValue: ""
+                              })
+                         );
+                    }
 
-                    policy.qualifiers?.push(parameterQualifiers.stringValue);
+                    const qualifier = parameters.get(`${policy.name}_QUALIFIER`);
+
+                    policy.qualifiers?.push(qualifier?.stringValue || '');
 
                     policy.resources = policy.resources || ServiceDeployIAM.formatResourceQualifier(policy.name, policy.prefix || '', policy.qualifiers || []);
 
@@ -386,7 +394,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           const deployUser = new User(this, 'DeployUser', {
                userName: `${serviceName}-deployer`,
                groups: [
-                    this.policyStores[1].type as Group
+                    serviceGroup.type as Group
                ]
           });
 
