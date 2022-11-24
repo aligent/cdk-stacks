@@ -230,7 +230,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                ]
           }
 
-          if (sharedVPCParameter.stringValue) {
+          if (sharedVPCParameter.stringValue !== "") {
                serviceRole.policies.concat([
                     {
                          name: 'EC2',
