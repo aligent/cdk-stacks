@@ -315,7 +315,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'IAM',
-                         resources: [serviceRole.type.roleArn],
+                         resources: [(serviceRole.type as Role).roleArn],
                          actions: [
                               "iam:PassRole"
                          ]
@@ -400,7 +400,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           });
 
           new cdk.CfnOutput(this, `${export_prefix}DeployRoleArn`, {
-               value: serviceRole.type.roleArn,
+               value: (serviceRole.type as Role).roleArn,
                description: 'The ARN of the CloudFormation service role',
                exportName: `${export_prefix}serverless-deployer-role-arn`,
           });
