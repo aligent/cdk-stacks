@@ -351,7 +351,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                          resources: [`*`],
                          conditions: {
                               "StringEquals": {
-                                   "ec2:Vpc": `arn:aws:ec2:${region}:${accountId}vpc:/${SHARED_VPC_ID}`
+                                   "ec2:Vpc": `arn:aws:ec2:${region}:${accountId}vpc:/${sharedVPCParameter.stringValue}`
                               }
                          },
                          actions: [
