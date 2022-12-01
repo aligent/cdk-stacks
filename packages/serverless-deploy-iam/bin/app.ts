@@ -11,6 +11,7 @@ import {
      User,
      Conditions
 } from '@aws-cdk/aws-iam';
+import { CfnParameter } from '@aws-cdk/core';
 
 interface Policy {
      name: string
@@ -50,10 +51,9 @@ export class ServiceDeployIAM extends cdk.Stack {
           const version = '1'
           const serviceName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX, '');
 
-          const sharedVPCParameter = new ssm.StringParameter(this, `SHARED_VPC_ID`, {
-               parameterName: `SERVICE_NAME`,
+          const sharedVPCParameter = new cdk.CfnParameter(this, `SHARED_VPC_ID`, {
                description: `Shared VPC ID`,
-               stringValue: ""
+               default: ''
           });
 
           const accountId = cdk.Stack.of(this).account;
@@ -230,7 +230,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                ]
           }
 
-          if (sharedVPCParameter.stringValue !== "") {
+          if (sharedVPCParameter.valueAsString) {
                serviceRole.policies.concat([
                     {
                          name: 'EC2',
@@ -248,7 +248,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                          resources: [`*`],
                          conditions: {
                               "StringEquals": {
-                                   "ec2:Vpc": `arn:aws:ec2:${region}:${accountId}vpc:/${sharedVPCParameter.stringValue}`
+                                   "ec2:Vpc": `arn:aws:ec2:${region}:${accountId}vpc:/${sharedVPCParameter.valueAsString}`
                               }
                          },
                          actions: [
@@ -365,29 +365,30 @@ export class ServiceDeployIAM extends cdk.Stack {
                serviceGroup
           ]
 
-          const parameters = new Map<string, ssm.StringParameter>();
+          const parameters = new Map<string, CfnParameter>();
 
           this.policyStores.forEach(store => {
                store.policies.forEach(policy => {
                     if (parameters.has(`${policy.name}_QUALIFIER`)) {
                          parameters.set(`${policy.name}_QUALIFIER`,
-                              new ssm.StringParameter(this, `${policy.name}_QUALIFIER`, {
-                                   parameterName: `${policy.name}_QUALIFIER`,
+                              new CfnParameter(this, `${policy.name}_QUALIFIER`, {
+                                   type: 'String',
                                    description: `Custom qualifier values provided for ${policy.name}`,
-                                   stringValue: ""
+                                   default: ''
                               })
-                         );
-                    }
+                         )
+                    };
 
                     const qualifier = parameters.get(`${policy.name}_QUALIFIER`);
 
-                    policy.qualifiers?.push(qualifier?.stringValue || '');
+                    policy.qualifiers?.push(qualifier?.valueAsString || '');
 
                     policy.resources = policy.resources || ServiceDeployIAM.formatResourceQualifier(policy.name, policy.prefix || '', policy.qualifiers || []);
 
                     store.type.addToPolicy(
                          new PolicyStatement(policy)
                     );
+
                });
           });
 
@@ -434,7 +435,6 @@ export class ServiceDeployIAM extends cdk.Stack {
      static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[], delimiter: string = "/"): string[] {
           return [
                ...qualifiers,
-               ...process.env[`${serviceName}_QUALIFIER`]?.split(",") || []
           ].filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
      }
 }
