@@ -300,8 +300,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                          prefix: `arn:aws:ssm:${region}:${accountId}:parameter`,
                          qualifiers: [`${serviceName}*`],
                          actions: [
-                              "ssm:GetParameter",
-
+                              "ssm:GetParameter"
                          ]
                     },
                     {
@@ -381,7 +380,8 @@ export class ServiceDeployIAM extends cdk.Stack {
 
                     const qualifier = parameters.get(`${policy.name}_QUALIFIER`);
 
-                    policy.qualifiers?.push(qualifier?.valueAsString || '');
+                    if (qualifier)
+                         policy.qualifiers?.push(qualifier.valueAsString);
 
                     policy.resources = policy.resources || ServiceDeployIAM.formatResourceQualifier(policy.name, policy.prefix || '', policy.qualifiers || []);
 
