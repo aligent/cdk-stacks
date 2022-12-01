@@ -51,7 +51,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           const version = '1'
           const serviceName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX, '');
 
-          const sharedVPCParameter = new cdk.CfnParameter(this, `SHARED_VPC_ID`, {
+          const sharedVPCParameter = new cdk.CfnParameter(this, `sharedVpcId`, {
                description: `Shared VPC ID`,
                default: ''
           });
@@ -368,9 +368,10 @@ export class ServiceDeployIAM extends cdk.Stack {
 
           this.policyStores.forEach(store => {
                store.policies.forEach(policy => {
-                    if (!parameters.has(`${policy.name}_QUALIFIER`)) {
-                         parameters.set(`${policy.name}_QUALIFIER`,
-                              new CfnParameter(this, `${policy.name}_QUALIFIER`, {
+                    const parameterName = `${policy.name.toLowerCase()}Qualifier`;
+                    if (!parameters.has(parameterName)) {
+                         parameters.set(parameterName,
+                              new CfnParameter(this, parameterName, {
                                    type: 'String',
                                    description: `Custom qualifier values provided for ${policy.name}`,
                                    default: ''
@@ -378,7 +379,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                          )
                     };
 
-                    const qualifier = parameters.get(`${policy.name}_QUALIFIER`);
+                    const qualifier = parameters.get(parameterName);
 
                     if (qualifier)
                          policy.qualifiers?.push(qualifier.valueAsString);
