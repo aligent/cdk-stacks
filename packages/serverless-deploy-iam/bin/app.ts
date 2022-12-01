@@ -369,7 +369,7 @@ export class ServiceDeployIAM extends cdk.Stack {
 
           this.policyStores.forEach(store => {
                store.policies.forEach(policy => {
-                    if (parameters.has(`${policy.name}_QUALIFIER`)) {
+                    if (!parameters.has(`${policy.name}_QUALIFIER`)) {
                          parameters.set(`${policy.name}_QUALIFIER`,
                               new CfnParameter(this, `${policy.name}_QUALIFIER`, {
                                    type: 'String',
@@ -432,7 +432,15 @@ export class ServiceDeployIAM extends cdk.Stack {
      // Takes an array of qualifiers and prepends the prefix to each, returning the resulting array
      // Tests for injected resource qualifiers and adds these.
      // Also creates a parameter in CloudFormation
-     static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[], delimiter: string = "/"): string[] {
+     static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[]): string[] {
+          let delimiter = "/";
+          switch (serviceName) {
+               case "STEP_FUNCTION":
+                    delimiter = "";
+               case "EVENT_BRIDGE":
+                    delimiter = ":";
+          }
+
           return [
                ...qualifiers,
           ].filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
@@ -441,3 +449,4 @@ export class ServiceDeployIAM extends cdk.Stack {
 
 const app = new cdk.App();
 new ServiceDeployIAM(app, `${SERVICE_NAME}${STACK_SUFFIX}`, { description: "This stack includes IAM resources needed to deploy Serverless apps into this environment" });
+
