@@ -1,5 +1,5 @@
 import * as cdk from '@aws-cdk/core';
-import { expect as expectCDK, matchTemplate, MatchStyle, haveResource, haveResourceLike, countResources, objectLike, arrayWith, stringLike, notMatching} from '@aws-cdk/assert';
+import { expect as expectCDK, matchTemplate, MatchStyle, haveResource, haveResourceLike, countResources, objectLike, arrayWith, stringLike, notMatching } from '@aws-cdk/assert';
 import { ServiceDeployIAM } from '../bin/app';
 
 
@@ -61,7 +61,7 @@ describe('Deploy user policy', () => {
                               Resource: {
                                    "Fn::Join": [
                                         "",
-                                        ["arn:aws:cloudformation:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":stack/jest*"]]
+                                        ["arn:aws:cloudformation:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":stack/jest*"]]
                               }
                          }),
                     )
@@ -81,7 +81,8 @@ describe('Deploy user policy', () => {
                               "Action": "lambda:GetFunction",
                               "Effect": "Allow",
                               "Resource": {
-                                   "Fn::Join": ["",["arn:aws:lambda:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":function:jest*"]]}
+                                   "Fn::Join": ["", ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function:jest*"]]
+                              }
                          }),
                     )
                }
@@ -115,12 +116,13 @@ describe('CloudFormation service policy', () => {
                                         "arn:aws:s3:::jest*/*"
                                    ]
                               }),
-                              objectLike({
-                                   "Action": "s3:ListAllMyBuckets",
-                                   "Effect": "Allow",
-                                   "Resource": "*"
-                              })
-                    )}
+                         objectLike({
+                              "Action": "s3:ListAllMyBuckets",
+                              "Effect": "Allow",
+                              "Resource": "*"
+                         })
+                    )
+               }
           }));
      });
 });
@@ -140,9 +142,10 @@ describe('Deploy group invocation permission', () => {
                                         "lambda:InvokeFunction"
                                    ],
                                    "Effect": "Allow",
-                                   "Resource": { "Fn::Join": ["",["arn:aws:lambda:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":function:jest*"]] }
+                                   "Resource": { "Fn::Join": ["", ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function:jest*"]] }
                               })
-                    ))}
+                    ))
+               }
           }));
      });
 
@@ -161,10 +164,64 @@ describe('Deploy group invocation permission', () => {
                                         "lambda:InvokeFunction"
                                    ],
                                    "Effect": "Allow",
-                                   "Resource": { "Fn::Join": ["",["arn:aws:lambda:",{"Ref": "AWS::Region"},":",{"Ref": "AWS::AccountId"},":function:jest*"]] }
+                                   "Resource": { "Fn::Join": ["", ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function:jest*"]] }
                               })
-                    )}
+                    )
+               }
           }));
      });
 });
 
+describe('Shared VPC', () => {
+     test('when included adds additional EC2 service role policies', () => {
+          process.env.SHARED_VPC_ID = 'vpc-57e1b829';
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("*ServiceRolev1DefaultPolicy*"),
+               PolicyDocument: {
+                    Statement: arrayWith(
+                         objectLike(
+                              {
+                                   "Action": [
+                                        "ec2:CreateSecurityGroup",
+                                        "ec2:DescribeSecurityGroups",
+                                        "ec2:DescribeSubnets",
+                                        "ec2:DescribeVpcs",
+                                        "ec2:createTags"
+                                   ],
+                                   "Effect": "Allow",
+                                   "Resource": '*'
+                              }),
+                         objectLike(
+                              {
+                                   "Action": "ec2:DeleteSecurityGroup",
+                                   "Condition": {
+                                        "StringEquals": {
+                                             "ec2:Vpc": {
+                                                  "Fn::Join": [
+                                                       "",
+                                                       [
+                                                            "arn:aws:ec2:",
+                                                            {
+                                                                 "Ref": "AWS::Region"
+                                                            },
+                                                            ":",
+                                                            {
+                                                                 "Ref": "AWS::AccountId"
+                                                            },
+                                                            `vpc:/${process.env.SHARED_VPC_ID}`
+                                                       ]
+                                                  ]
+                                             }
+                                        }
+                                   },
+                                   "Effect": "Allow",
+                                   "Resource": "*"
+                              })
+                    )
+               }
+          }));
+     });
+});
