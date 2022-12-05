@@ -58,11 +58,19 @@ describe('Deploy user policy', () => {
                                    "cloudformation:GetTemplate"
                               ],
                               Effect: "Allow",
-                              Resource: {
-                                   "Fn::Join": [
-                                        "",
-                                        ["arn:aws:cloudformation:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":stack/jest*"]]
-                              }
+                              Resource: [
+                                   {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:cloudformation:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":stack/jest*"],
+                                        ],
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:cloudformation:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":stack/", { "Ref": "cloudformationQualifier" }]
+                                        ]
+                                   }
+                              ]
                          }),
                     )
                }
@@ -78,11 +86,24 @@ describe('Deploy user policy', () => {
                     Statement: arrayWith(
 
                          objectLike({
-                              "Action": "lambda:GetFunction",
-                              "Effect": "Allow",
-                              "Resource": {
-                                   "Fn::Join": ["", ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function:jest*"]]
-                              }
+                              Action: [
+                                   "lambda:GetFunction",
+                                   "lambda:InvokeFunction"
+                              ],
+                              Effect: "Allow",
+                              Resource: [
+                                   {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":parameter/jest*"],
+                                        ],
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":parameter/", { "Ref": "lambdaQualifier" }]
+                                        ]
+                                   }
+                              ]
                          }),
                     )
                }
@@ -109,63 +130,29 @@ describe('CloudFormation service policy', () => {
                     Statement: arrayWith(
                          objectLike(
                               {
-                                   "Action": "s3:*",
-                                   "Effect": "Allow",
-                                   "Resource": [
-                                        "arn:aws:s3:::jest*",
-                                        "arn:aws:s3:::jest*/*"
+                                   Action: "s3:*",
+                                   Effect: "Allow",
+                                   Resource: [
+                                        "arn:aws:s3:::/jest*",
+                                        "arn:aws:s3:::/jest*/*",
+                                        {
+                                             "Fn::Join": [
+                                                  "",
+                                                  [
+                                                       "arn:aws:s3:::/",
+                                                       {
+                                                            "Ref": "s3Qualifier"
+                                                       }
+                                                  ]
+                                             ]
+                                        }
                                    ]
                               }),
                          objectLike({
-                              "Action": "s3:ListAllMyBuckets",
-                              "Effect": "Allow",
-                              "Resource": "*"
+                              Action: "s3:ListAllMyBuckets",
+                              Effect: "Allow",
+                              Resource: "*"
                          })
-                    )
-               }
-          }));
-     });
-});
-
-describe('Deploy group invocation permission', () => {
-     test('does not have permission', () => {
-          const app = new cdk.App();
-          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
-          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
-               PolicyName: stringLike("*deployersDefaultPolicy*"),
-               PolicyDocument: {
-                    Statement: notMatching(arrayWith(
-                         objectLike(
-                              {
-                                   "Action": [
-                                        "lambda:GetFunction",
-                                        "lambda:InvokeFunction"
-                                   ],
-                                   "Effect": "Allow",
-                                   "Resource": { "Fn::Join": ["", ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function:jest*"]] }
-                              })
-                    ))
-               }
-          }));
-     });
-
-     test('has permission', () => {
-          process.env.ALLOW_DEPLOY_INVOCATION = 'true';
-          const app = new cdk.App();
-          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
-          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
-               PolicyName: stringLike("*deployersDefaultPolicy*"),
-               PolicyDocument: {
-                    Statement: arrayWith(
-                         objectLike(
-                              {
-                                   "Action": [
-                                        "lambda:GetFunction",
-                                        "lambda:InvokeFunction"
-                                   ],
-                                   "Effect": "Allow",
-                                   "Resource": { "Fn::Join": ["", ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function:jest*"]] }
-                              })
                     )
                }
           }));
@@ -174,9 +161,12 @@ describe('Deploy group invocation permission', () => {
 
 describe('Shared VPC', () => {
      test('when included adds additional EC2 service role policies', () => {
-          process.env.SHARED_VPC_ID = 'vpc-57e1b829';
+          const sharedVpcId = 'vpc-57e1b829'; // Random VPC id
           const app = new cdk.App();
-          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          console.log('', app, 3)
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam', {
+               
+          });
 
           expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
                PolicyName: stringLike("*ServiceRolev1DefaultPolicy*"),
@@ -184,20 +174,20 @@ describe('Shared VPC', () => {
                     Statement: arrayWith(
                          objectLike(
                               {
-                                   "Action": [
+                                   Action: [
                                         "ec2:CreateSecurityGroup",
                                         "ec2:DescribeSecurityGroups",
                                         "ec2:DescribeSubnets",
                                         "ec2:DescribeVpcs",
                                         "ec2:createTags"
                                    ],
-                                   "Effect": "Allow",
-                                   "Resource": '*'
+                                   Effect: "Allow",
+                                   Resource: '*'
                               }),
                          objectLike(
                               {
-                                   "Action": "ec2:DeleteSecurityGroup",
-                                   "Condition": {
+                                   Action: "ec2:DeleteSecurityGroup",
+                                   Condition: {
                                         "StringEquals": {
                                              "ec2:Vpc": {
                                                   "Fn::Join": [
@@ -211,14 +201,14 @@ describe('Shared VPC', () => {
                                                             {
                                                                  "Ref": "AWS::AccountId"
                                                             },
-                                                            `vpc:/${process.env.SHARED_VPC_ID}`
+                                                            `vpc:/${sharedVpcId}`
                                                        ]
                                                   ]
                                              }
                                         }
                                    },
-                                   "Effect": "Allow",
-                                   "Resource": "*"
+                                   Effect: "Allow",
+                                   Resource: "*"
                               })
                     )
                }
