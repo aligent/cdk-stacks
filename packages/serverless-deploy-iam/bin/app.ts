@@ -2,21 +2,46 @@
 import * as cdk from '@aws-cdk/core';
 import * as ssm from '@aws-cdk/aws-ssm';
 import {
-   ManagedPolicy,
-   Role,
-   ServicePrincipal,
-   CompositePrincipal,
-   PolicyStatement,
-   Effect,
-   Group,
-   User
+     Role,
+     ServicePrincipal,
+     CompositePrincipal,
+     PolicyStatement,
+     Effect,
+     Group,
+     User,
+     Conditions
 } from '@aws-cdk/aws-iam';
+import { CfnParameter } from '@aws-cdk/core';
+
+interface Policy {
+     name: string
+     effect?: Effect
+     actions?: string[]
+     conditions?: Conditions
+}
+
+interface QualifierPolicy extends Policy {
+     prefix: string
+     qualifiers: string[]
+     resources?: string[]
+}
+
+interface ResourcePolicy extends Policy {
+     prefix?: string
+     qualifiers?: string[]
+     resources: string[]
+}
+
+interface PolicyStore {
+     type: Group | Role
+     policies: Array<ResourcePolicy | QualifierPolicy>
+}
 
 const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : 'unknown-service'
-const SHARED_VPC_ID = process.env.SHARED_VPC_ID
 const STACK_SUFFIX = '-deploy-iam'
 const EXPORT_PREFIX = process.env.EXPORT_PREFIX ? process.env.EXPORT_PREFIX : SERVICE_NAME
 export class ServiceDeployIAM extends cdk.Stack {
+     private policyStores: PolicyStore[];
 
      constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
           super(scope, id, props);
@@ -24,57 +49,192 @@ export class ServiceDeployIAM extends cdk.Stack {
           // Version will be used for auditing which role is being used by projects.
           // This should only be updated for BREAKING changes.
           const version = '1'
-          const serviceName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX,'');
-          const accountId = cdk.Stack.of(this).account;
-          const region = cdk.Stack.of(this).region
+          const serviceName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX, '');
 
-          const cloudFormationResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_FORMATION', `arn:aws:cloudformation:${region}:${accountId}:stack`, [`${serviceName}*`]);
-          const s3BucketResources = ServiceDeployIAM.formatResourceQualifier('S3', `arn:aws:s3:::`, [`${serviceName}*`, `${serviceName}*/*`], "");
-          const cloudWatchResources = ServiceDeployIAM.formatResourceQualifier('CLOUD_WATCH', `arn:aws:logs:${region}:${accountId}:log-group:`, [`aws/lambda/${serviceName}*`, `aws/apigateway/${serviceName}*`]);
-          const lambdaResources = ServiceDeployIAM.formatResourceQualifier('LAMBDA', `arn:aws:lambda:${region}:${accountId}:function:`, [`${serviceName}*`], '');
-          const stepFunctionResources = ServiceDeployIAM.formatResourceQualifier('STEP_FUNCTION', `arn:aws:states:${region}:${accountId}:stateMachine:`, [`${serviceName}*`], "");
-          const dynamoDbResources = ServiceDeployIAM.formatResourceQualifier('DYNAMO_DB', `arn:aws:dynamodb:${region}:${accountId}:table`, [`${serviceName}*`]);
-          const iamResources = ServiceDeployIAM.formatResourceQualifier('IAM', `arn:aws:iam::${accountId}:role`, [`${serviceName}*`]);
-          const eventBridgeResources = ServiceDeployIAM.formatResourceQualifier('EVENT_BRIDGE', `arn:aws:events:${region}:${accountId}`, [`rule/${serviceName}*`, `event-bus/${serviceName}*`], ":");
-          const apiGatewayResources = ServiceDeployIAM.formatResourceQualifier('API_GATEWAY', `arn:aws:apigateway:${region}::`, [`*`]);
-          const ssmDeploymentResources = ServiceDeployIAM.formatResourceQualifier('SSM', `arn:aws:ssm:${region}:${accountId}:parameter`, [`${serviceName}*`]);
-          const snsResources = ServiceDeployIAM.formatResourceQualifier('SNS', `arn:aws:sns:${region}:${accountId}:`, [`${serviceName}*`], "");
-          const sqsResources = ServiceDeployIAM.formatResourceQualifier('SQS', `arn:aws:sqs:${region}:${accountId}:`, [`${serviceName}*`], "");
-
-          const serviceRole = new Role(this, `ServiceRole-v${version}`, {
-               assumedBy: new CompositePrincipal(
-                    new ServicePrincipal('cloudformation.amazonaws.com'),
-                    new ServicePrincipal('lambda.amazonaws.com')
-               )
+          const sharedVPCParameter = new cdk.CfnParameter(this, `sharedVpcId`, {
+               description: `Shared VPC ID`,
+               default: ''
           });
 
-          // S3 bucket policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: s3BucketResources,
-                    actions: [
-                         "s3:*"
-                    ]
-               })
-          );
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: ['*'],
-                    actions: [
-                         "s3:ListAllMyBuckets",
-                    ]
-               })
-          );
+          const accountId = cdk.Stack.of(this).account;
+          const region = cdk.Stack.of(this).region;
 
-
-          if (process.env.SHARED_VPC_ID) {
-               // Security Groups
-               serviceRole.addToPolicy(
-                    new PolicyStatement({
-                         effect: Effect.ALLOW,
+          const serviceRole: PolicyStore = {
+               type: new Role(this, `ServiceRole-v${version}`, {
+                    assumedBy: new CompositePrincipal(
+                         new ServicePrincipal('cloudformation.amazonaws.com'),
+                         new ServicePrincipal('lambda.amazonaws.com')
+                    )
+               }),
+               policies: [
+                    {
+                         name: 'S3',
+                         prefix: `arn:aws:s3:::`,
+                         qualifiers: [`${serviceName}*`, `${serviceName}*/*`],
+                         actions: [
+                              "s3:*"
+                         ]
+                    },
+                    {
+                         name: 'S3',
                          resources: ['*'],
+                         actions: [
+                              "s3:ListAllMyBuckets"
+                         ]
+                    },
+                    {
+                         name: 'CLOUD_WATCH',
+                         prefix: `arn:aws:logs:${region}:${accountId}:log-group:`,
+                         qualifiers: [`aws/lambda/${serviceName}*`, `aws/apigateway/${serviceName}*`],
+                         actions: [
+                              "logs:CreateLogGroup",
+                              "logs:DescribeLogGroups",
+                              "logs:DeleteLogGroup",
+                              "logs:CreateLogStream",
+                              "logs:DescribeLogStreams",
+                              "logs:DeleteLogStream",
+                              "logs:FilterLogEvents"
+                         ]
+                    },
+                    {
+                         name: 'LAMBDA',
+                         prefix: `arn:aws:lambda:${region}:${accountId}:function:`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "lambda:GetFunction",
+                              "lambda:CreateFunction",
+                              "lambda:DeleteFunction",
+                              "lambda:UpdateFunctionConfiguration",
+                              "lambda:UpdateFunctionCode",
+                              "lambda:ListVersionsByFunction",
+                              "lambda:PublishVersion",
+                              "lambda:CreateAlias",
+                              "lambda:DeleteAlias",
+                              "lambda:UpdateAlias",
+                              "lambda:GetFunctionConfiguration",
+                              "lambda:AddPermission",
+                              "lambda:RemovePermission",
+                              "lambda:InvokeFunction",
+                              "lambda:ListTags",
+                              "lambda:TagResource",
+                              "lambda:PutFunctionConcurrency",
+                              "lambda:DeleteEventSourceMapping",
+                              "lambda:UpdateEventSourceMapping",
+                              "lambda:CreateEventSourceMapping"
+                         ]
+                    },
+                    {
+                         name: 'LAMBDA',
+                         resources: [`*`],
+                         actions: [
+                              "lambda:GetEventSourceMapping",
+                              "lambda:ListEventSourceMappings"
+                         ]
+                    },
+                    {
+                         name: 'IAM',
+                         prefix: `arn:aws:iam::${accountId}:role`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "iam:PassRole",
+                              "iam:CreateRole",
+                              "iam:GetRole",
+                              "iam:DeleteRole",
+                              "iam:GetRolePolicy",
+                              "iam:DeleteRolePolicy",
+                              "iam:PutRolePolicy",
+                              "iam:DetachRolePolicy",
+                              "iam:AttachRolePolicy",
+                         ]
+                    },
+                    {
+                         name: 'DYNAMO_DB',
+                         prefix: `arn:aws:dynamodb:${region}:${accountId}:table`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "dynamodb:DescribeTable",
+                              "dynamodb:CreateTable",
+                              "dynamodb:UpdateTable",
+                              "dynamodb:DeleteTable",
+                         ]
+                    },
+                    {
+                         name: 'STEP_FUNCTION',
+                         prefix: `arn:aws:states:${region}:${accountId}:stateMachine:`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "states:CreateStateMachine",
+                              "states:UpdateStateMachine",
+                              "states:DeleteStateMachine",
+                              "states:DescribeStateMachine",
+                              "states:TagResource",
+                         ]
+                    },
+                    {
+                         name: 'EVENT_BRIDGE',
+                         prefix: `arn:aws:events:${region}:${accountId}`,
+                         qualifiers: [`rule/${serviceName}*`, `event-bus/${serviceName}*`],
+                         actions: [
+                              "events:EnableRule",
+                              "events:PutRule",
+                              "events:DescribeRule",
+                              "events:ListRules",
+                              "events:DisableRule",
+                              "events:PutTargets",
+                              "events:RemoveTargets",
+                              "events:DeleteRule",
+                              "events:CreateEventBus",
+                              "events:DescribeEventBus",
+                              "events:TagResource"
+                         ]
+                    },
+                    {
+                         name: 'API_GATEWAY',
+                         resources: [`*`],
+                         actions: [
+                              "apigateway:*",
+                         ]
+                    },
+                    {
+                         name: 'SNS',
+                         prefix: `arn:aws:sns:${region}:${accountId}:`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "sns:GetTopicAttributes",
+                              "sns:CreateTopic",
+                              "sns:DeleteTopic",
+                              "sns:Subscribe",
+                              "sns:Unsubscribe",
+                              "sns:ListSubscriptionsByTopic"
+                         ]
+                    },
+                    {
+                         name: 'SQS',
+                         prefix: `arn:aws:sqs:${region}:${accountId}:`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "sqs:UntagQueue",
+                              "sqs:RemovePermission",
+                              "sqs:GetQueueUrl",
+                              "sqs:GetQueueAttributes",
+                              "sqs:AddPermission",
+                              "sqs:DeleteQueue",
+                              "sqs:ListQueueTags",
+                              "sqs:SetQueueAttributes",
+                              "sqs:ChangeMessageVisibility",
+                              "sqs:TagQueue",
+                              "sqs:ListDeadLetterSourceQueues",
+                              "sqs:CreateQueue",
+                         ]
+                    }
+               ]
+          }
+
+          if (sharedVPCParameter.valueAsString) {
+               serviceRole.policies.concat([
+                    {
+                         name: 'EC2',
+                         resources: [`*`],
                          actions: [
                               "ec2:CreateSecurityGroup",
                               "ec2:DescribeSecurityGroups",
@@ -82,362 +242,163 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "ec2:DescribeVpcs",
                               "ec2:createTags"
                          ]
-                    })
-               );
-               serviceRole.addToPolicy(
-                    new PolicyStatement({
-                         effect: Effect.ALLOW,
-                         resources: ['*'],
+                    },
+                    {
+                         name: 'EC2',
+                         resources: [`*`],
                          conditions: {
                               "StringEquals": {
-                                   "ec2:Vpc": `arn:aws:ec2:${region}:${accountId}vpc:/${process.env.SHARED_VPC_ID}`
+                                   "ec2:Vpc": `arn:aws:ec2:${region}:${accountId}vpc:/${sharedVPCParameter.valueAsString}`
                               }
                          },
                          actions: [
-                              "ec2:DeleteSecurityGroup",
+                              "ec2:DeleteSecurityGroup"
                          ]
-                    })
-               );
+                    }
+               ]);
           }
 
-
-          // CloudWatch policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: cloudWatchResources,
-                    actions: [
-                         "logs:CreateLogGroup",
-                         "logs:DescribeLogGroups",
-                         "logs:DeleteLogGroup",
-                         "logs:CreateLogStream",
-                         "logs:DescribeLogStreams",
-                         "logs:DeleteLogStream",
-                         "logs:FilterLogEvents"
-                    ]
-               })
-          );
-
-
-          // Lambda policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: lambdaResources,
-                    actions: [
-                         "lambda:GetFunction",
-                         "lambda:CreateFunction",
-                         "lambda:DeleteFunction",
-                         "lambda:UpdateFunctionConfiguration",
-                         "lambda:UpdateFunctionCode",
-                         "lambda:ListVersionsByFunction",
-                         "lambda:PublishVersion",
-                         "lambda:CreateAlias",
-                         "lambda:DeleteAlias",
-                         "lambda:UpdateAlias",
-                         "lambda:GetFunctionConfiguration",
-                         "lambda:AddPermission",
-                         "lambda:RemovePermission",
-                         "lambda:InvokeFunction",
-                         "lambda:ListTags",
-                         "lambda:TagResource",
-                         "lambda:PutFunctionConcurrency"
-                    ]
-               })
-          );
-
-
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: ['*'],
-                    actions: [
-                         "lambda:GetEventSourceMapping",
-                         "lambda:ListEventSourceMappings"
-                    ]
-               })
-          );
-
-
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    conditions: {
-                         "StringLike": {
-                              "lambda:FunctionArn": lambdaResources[0]
-                         }
+          const serviceGroup: PolicyStore = {
+               type: new Group(this, `${serviceName}-deployers`),
+               policies: [
+                    {
+                         name: 'CLOUD_FORMATION',
+                         prefix: `arn:aws:cloudformation:${region}:${accountId}:stack`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "cloudformation:CreateStack",
+                              "cloudformation:DescribeStacks",
+                              "cloudformation:DeleteStack",
+                              "cloudformation:DescribeStackEvents",
+                              "cloudformation:UpdateStack",
+                              "cloudformation:ExecuteChangeSet",
+                              "cloudformation:CreateChangeSet",
+                              "cloudformation:DeleteChangeSet",
+                              "cloudformation:DescribeChangeSet",
+                              "cloudformation:ListStackResources",
+                              "cloudformation:DescribeStackResource",
+                              "cloudformation:DescribeStackResources",
+                              "cloudformation:GetTemplate"
+                         ]
                     },
-                    resources: ['*'],
-                    actions: [
-                         "lambda:DeleteEventSourceMapping",
-                         "lambda:UpdateEventSourceMapping",
-                         "lambda:CreateEventSourceMapping",
-                    ]
-               })
-          );
-
-
-          // IAM policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: iamResources,
-                    actions: [
-                         "iam:PassRole",
-                         "iam:CreateRole",
-                         "iam:GetRole",
-                         "iam:DeleteRole",
-                         "iam:GetRolePolicy",
-                         "iam:DeleteRolePolicy",
-                         "iam:PutRolePolicy",
-                         "iam:DetachRolePolicy",
-                         "iam:AttachRolePolicy",
-                    ]
-               })
-          );
-
-          // DynamoDB policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: dynamoDbResources,
-                    actions: [
-                         "dynamodb:DescribeTable",
-                         "dynamodb:CreateTable",
-                         "dynamodb:UpdateTable",
-                         "dynamodb:DeleteTable",
-                    ]
-               })
-          );
-
-          // StepFunctions policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: stepFunctionResources,
-                    actions: [
-                         "states:CreateStateMachine",
-                         "states:UpdateStateMachine",
-                         "states:DeleteStateMachine",
-                         "states:DescribeStateMachine",
-                         "states:TagResource",
-                    ]
-               })
-          );
-
-          // EventBridge policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: eventBridgeResources,
-                    actions: [
-                         "events:EnableRule",
-                         "events:PutRule",
-                         "events:DescribeRule",
-                         "events:ListRules",
-                         "events:DisableRule",
-                         "events:PutTargets",
-                         "events:RemoveTargets",
-                         "events:DeleteRule",
-                         "events:CreateEventBus",
-                         "events:DescribeEventBus",
-                         "events:TagResource"
-                    ]
-               })
-          );
-
-          // APIGateway policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: apiGatewayResources,
-                    actions: [
-                         "apigateway:*",
-                    ]
-               })
-          );
-
-
-          // SNS policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: snsResources,
-                    actions: [
-                         "sns:GetTopicAttributes",
-                         "sns:CreateTopic",
-                         "sns:DeleteTopic",
-                         "sns:Subscribe",
-                         "sns:Unsubscribe",
-                         "sns:ListSubscriptionsByTopic"
-                    ]
-               })
-          );
-
-          // SQS policy
-          serviceRole.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: sqsResources,
-                    actions: [
-                         "sqs:UntagQueue",
-                         "sqs:RemovePermission",
-                         "sqs:GetQueueUrl",
-                         "sqs:GetQueueAttributes",
-                         "sqs:AddPermission",
-                         "sqs:DeleteQueue",
-                         "sqs:ListQueueTags",
-                         "sqs:SetQueueAttributes",
-                         "sqs:ChangeMessageVisibility",
-                         "sqs:TagQueue",
-                         "sqs:ListDeadLetterSourceQueues",
-                         "sqs:CreateQueue",
-                    ]
-               })
-          );
-
-          const deployUser = new User(this, 'DeployUser', {
-               userName: `${serviceName}-deployer`,
-          })
-
-          const deployGroup = new Group(this, `${serviceName}-deployers`);
-
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: ['*'],
-                    actions: [
-                         "cloudformation:ValidateTemplate",
-                    ]
-               })
-          );
-
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: cloudFormationResources,
-                    actions: [
-                         "cloudformation:CreateStack",
-                         "cloudformation:DescribeStacks",
-                         "cloudformation:DeleteStack",
-                         "cloudformation:DescribeStackEvents",
-                         "cloudformation:UpdateStack",
-                         "cloudformation:ExecuteChangeSet",
-                         "cloudformation:CreateChangeSet",
-                         "cloudformation:DeleteChangeSet",
-                         "cloudformation:DescribeChangeSet",
-                         "cloudformation:ListStackResources",
-                         "cloudformation:DescribeStackResource",
-                         "cloudformation:DescribeStackResources",
-                         "cloudformation:GetTemplate"
-                    ]
-               })
-          );
-
-          // Serverless uses this to skip functions which have not changed
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: lambdaResources,
-                    actions: [
-                         "lambda:GetFunction",
-                    ]
-               })
-          );
-
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: [serviceRole.roleArn],
-                    actions: [
-                         "iam:PassRole"
-                    ]
-               })
-          );
-
-          // S3 bucket policy
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: s3BucketResources,
-                    actions: [
-                         "s3:ListBucket",
-                         "s3:DeleteObject",
-                         "s3:PutObject",
-                         "s3:GetObject",
-                         "s3:GetBucketLocation"
-                    ]
-               })
-          );
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: ['*'],
-                    actions: [
-                         "s3:ListAllMyBuckets",
-                    ]
-               })
-          );
-
-
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: ['*'],
-                    actions: [
-                         "ssm:DescribeParameters",
-                    ]
-               })
-          );
-
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: ssmDeploymentResources,
-                    actions: [
-                         "ssm:GetParameter",
-                    ]
-               })
-          );
-
-          // Deploy user must have permission to fetch API keys after the deploy
-          // Generated api key names are random so this cannot be limited to the service at this time
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: [`arn:aws:apigateway:${region}::/apikeys/*`],
-                    actions: [
-                         "apigateway:GET",
-                         "apigateway:PATCH",
-                    ]
-               })
-          );
-
-          // The serverless-api-gateway-throttling requires PATCH access using the deploy user to update maxRequestsPerSecond and maxConcurrentRequests
-          deployGroup.addToPolicy(
-               new PolicyStatement({
-                    effect: Effect.ALLOW,
-                    resources: [`arn:aws:apigateway:${region}::/restapis/*/stages/*`],
-                    actions: [
-                         "apigateway:PATCH",
-                    ]
-               })
-          );
-
-          if (process.env.ALLOW_DEPLOY_INVOCATION) {
-               deployGroup.addToPolicy(
-                    new PolicyStatement({
-                         effect: Effect.ALLOW,
-                         resources: lambdaResources,
+                    {
+                         name: 'CLOUD_FORMATION',
+                         resources: [`*`],
+                         actions: [
+                              "cloudformation:ValidateTemplate",
+                         ]
+                    },
+                    {
+                         name: 'SSM',
+                         resources: ['*'],
+                         actions: [
+                              "ssm:DescribeParameters"
+                         ]
+                    },
+                    {
+                         name: 'SSM',
+                         prefix: `arn:aws:ssm:${region}:${accountId}:parameter`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "ssm:GetParameter"
+                         ]
+                    },
+                    {
+                         name: 'LAMBDA',
+                         prefix: `arn:aws:ssm:${region}:${accountId}:parameter`,
+                         qualifiers: [`${serviceName}*`],
                          actions: [
                               "lambda:GetFunction",
                               "lambda:InvokeFunction"
                          ]
-                    })
-               );
+                    },
+                    {
+                         name: 'IAM',
+                         resources: [(serviceRole.type as Role).roleArn],
+                         actions: [
+                              "iam:PassRole"
+                         ]
+                    },
+                    {
+                         name: 'S3',
+                         prefix: `arn:aws:s3:::`,
+                         qualifiers: [`${serviceName}*`, `${serviceName}*/*`],
+                         actions: [
+                              "s3:ListBucket",
+                              "s3:DeleteObject",
+                              "s3:PutObject",
+                              "s3:GetObject",
+                              "s3:GetBucketLocation"
+                         ]
+                    },
+                    {
+                         name: 'S3',
+                         resources: ['*'],
+                         actions: [
+                              "s3:ListAllMyBuckets",
+                         ]
+                    },
+                    // Deploy user must have permission to fetch API keys after the deploy
+                    // Generated api key names are random so this cannot be limited to the service at this time
+                    {
+                         name: 'API_GATEWAY',
+                         resources: [`arn:aws:apigateway:${region}::/apikeys/*`],
+                         actions: [
+                              "apigateway:GET",
+                              "apigateway:PATCH",
+                         ]
+                    },
+                    // The serverless-api-gateway-throttling requires PATCH access using the deploy user to update maxRequestsPerSecond and maxConcurrentRequests
+                    {
+                         name: 'API_GATEWAY',
+                         resources: [`arn:aws:apigateway:${region}::/restapis/*/stages/*`],
+                         actions: [
+                              "apigateway:PATCH"
+                         ]
+                    }
+               ]
           }
 
-          deployUser.addToGroup(deployGroup);
+          this.policyStores = [
+               serviceRole,
+               serviceGroup
+          ]
+
+          const parameters = new Map<string, CfnParameter>();
+
+          this.policyStores.forEach(store => {
+               store.policies.forEach(policy => {
+                    const parameterName = `${policy.name.toLowerCase()}Qualifier`;
+                    if (!parameters.has(parameterName)) {
+                         parameters.set(parameterName,
+                              new CfnParameter(this, parameterName, {
+                                   type: 'String',
+                                   description: `Custom qualifier values provided for ${policy.name}`,
+                                   default: ''
+                              })
+                         )
+                    };
+
+                    const qualifier = parameters.get(parameterName);
+
+                    if (qualifier)
+                         policy.qualifiers?.push(qualifier.valueAsString);
+
+                    policy.resources = policy.resources || ServiceDeployIAM.formatResourceQualifier(policy.name, policy.prefix || '', policy.qualifiers || []);
+
+                    store.type.addToPolicy(
+                         new PolicyStatement(policy)
+                    );
+
+               });
+          });
+
+          const deployUser = new User(this, 'DeployUser', {
+               userName: `${serviceName}-deployer`,
+               groups: [
+                    serviceGroup.type as Group
+               ]
+          });
 
           // Export CDK Output
           const export_prefix = !EXPORT_PREFIX.endsWith('-') ? EXPORT_PREFIX.concat("-") : EXPORT_PREFIX
@@ -449,7 +410,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           });
 
           new cdk.CfnOutput(this, `${export_prefix}DeployRoleArn`, {
-               value: serviceRole.roleArn,
+               value: (serviceRole.type as Role).roleArn,
                description: 'The ARN of the CloudFormation service role',
                exportName: `${export_prefix}serverless-deployer-role-arn`,
           });
@@ -471,15 +432,22 @@ export class ServiceDeployIAM extends cdk.Stack {
 
      // Takes an array of qualifiers and prepends the prefix to each, returning the resulting array
      // Tests for injected resource qualifiers and adds these.
-     static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[], delimiter: string = "/"): string[] {
+     // Also creates a parameter in CloudFormation
+     static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[]): string[] {
+          let delimiter = "/";
+          switch (serviceName) {
+               case "STEP_FUNCTION":
+                    delimiter = "";
+               case "EVENT_BRIDGE":
+                    delimiter = ":";
+          }
+
           return [
                ...qualifiers,
-               ...process.env[`${serviceName}_QUALIFIER`]?.split(",") || []
-               ].filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
+          ].filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
      }
-
-
 }
 
 const app = new cdk.App();
-new ServiceDeployIAM(app, `${SERVICE_NAME}${STACK_SUFFIX}`, { description: "This stack includes IAM resources needed to deploy Serverless apps into this environment"});
+new ServiceDeployIAM(app, `${SERVICE_NAME}${STACK_SUFFIX}`, { description: "This stack includes IAM resources needed to deploy Serverless apps into this environment" });
+
