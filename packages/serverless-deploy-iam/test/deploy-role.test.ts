@@ -95,12 +95,12 @@ describe('Deploy user policy', () => {
                                    {
                                         "Fn::Join": [
                                              "",
-                                             ["arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":parameter/jest*"],
+                                             ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function/jest*"],
                                         ],
                                    }, {
                                         "Fn::Join": [
                                              "",
-                                             ["arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":parameter/", { "Ref": "lambdaQualifier" }]
+                                             ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function/", { "Ref": "lambdaQualifier" }]
                                         ]
                                    }
                               ]
