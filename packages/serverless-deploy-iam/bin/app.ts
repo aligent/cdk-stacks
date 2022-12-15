@@ -85,7 +85,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     {
                          name: 'CLOUD_WATCH',
                          prefix: `arn:aws:logs:${region}:${accountId}:log-group:`,
-                         qualifiers: [`aws/lambda/${serviceName}*`, `aws/apigateway/${serviceName}*`],
+                         qualifiers: [`/aws/lambda/${serviceName}*`, `/aws/apigateway/${serviceName}*`, `${serviceName}*`],
                          actions: [
                               "logs:CreateLogGroup",
                               "logs:DescribeLogGroups",
@@ -436,15 +436,16 @@ export class ServiceDeployIAM extends cdk.Stack {
      static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[]): string[] {
           let delimiter = "/";
           switch (serviceName) {
+               case "CLOUD_WATCH":
                case "STEP_FUNCTION":
                     delimiter = "";
+                    break;
                case "EVENT_BRIDGE":
                     delimiter = ":";
+                    break;
           }
 
-          return [
-               ...qualifiers,
-          ].filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
+          return qualifiers.filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
      }
 }
 

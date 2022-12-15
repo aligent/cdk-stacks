@@ -34,7 +34,6 @@ describe('Deploy user policy', () => {
                PolicyName: stringLike("jestdeployersDefaultPolicy*"),
                PolicyDocument: {
                     Statement: arrayWith(
-
                          objectLike({
                               Action: "cloudformation:ValidateTemplate",
                               Effect: "Allow",
@@ -84,7 +83,6 @@ describe('Deploy user policy', () => {
                PolicyName: stringLike("jestdeployersDefaultPolicy*"),
                PolicyDocument: {
                     Statement: arrayWith(
-
                          objectLike({
                               Action: [
                                    "lambda:GetFunction",
@@ -101,6 +99,53 @@ describe('Deploy user policy', () => {
                                         "Fn::Join": [
                                              "",
                                              ["arn:aws:ssm:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":parameter/", { "Ref": "lambdaQualifier" }]
+                                        ]
+                                   }
+                              ]
+                         }),
+                    )
+               }
+          }));
+     });
+
+     test('has correct CloudWatch permissions', () => {
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("ServiceRolev1DefaultPolicy*"),
+               PolicyDocument: {
+                    Statement: arrayWith(
+                         objectLike({
+                              Action: [
+                                   "logs:CreateLogGroup",
+                                   "logs:DescribeLogGroups",
+                                   "logs:DeleteLogGroup",
+                                   "logs:CreateLogStream",
+                                   "logs:DescribeLogStreams",
+                                   "logs:DeleteLogStream",
+                                   "logs:FilterLogEvents"
+                              ],
+                              Effect: "Allow",
+                              Resource: [
+                                   {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group:/aws/lambda/jest*"],
+                                        ],
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group:/aws/apigateway/jest*"]
+                                        ]
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group:jest*"]
+                                        ]
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group:", { "Ref": "cloudwatchQualifier" }]
                                         ]
                                    }
                               ]
