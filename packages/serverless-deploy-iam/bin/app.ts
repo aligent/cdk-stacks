@@ -305,7 +305,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'LAMBDA',
-                         prefix: `arn:aws:lambda:${region}:${accountId}:function`,
+                         prefix: `arn:aws:lambda:${region}:${accountId}:function:`,
                          qualifiers: [`${serviceName}*`],
                          actions: [
                               "lambda:GetFunction",

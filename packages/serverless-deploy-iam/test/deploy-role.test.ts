@@ -93,12 +93,12 @@ describe('Deploy user policy', () => {
                                    {
                                         "Fn::Join": [
                                              "",
-                                             ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function/jest*"],
+                                             ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function:jest*"],
                                         ],
                                    }, {
                                         "Fn::Join": [
                                              "",
-                                             ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function/", { "Ref": "lambdaQualifier" }]
+                                             ["arn:aws:lambda:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":function:", { "Ref": "lambdaQualifier" }]
                                         ]
                                    }
                               ]
@@ -178,13 +178,13 @@ describe('CloudFormation service policy', () => {
                                    Action: "s3:*",
                                    Effect: "Allow",
                                    Resource: [
-                                        "arn:aws:s3:::/jest*",
-                                        "arn:aws:s3:::/jest*/*",
+                                        "arn:aws:s3:::jest*",
+                                        "arn:aws:s3:::jest*/*",
                                         {
                                              "Fn::Join": [
                                                   "",
                                                   [
-                                                       "arn:aws:s3:::/",
+                                                       "arn:aws:s3:::",
                                                        {
                                                             "Ref": "s3Qualifier"
                                                        }
