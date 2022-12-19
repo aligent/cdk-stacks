@@ -437,6 +437,10 @@ export class ServiceDeployIAM extends cdk.Stack {
           let delimiter = "/";
           switch (serviceName) {
                case "CLOUD_WATCH":
+               case "LAMBDA":
+               case "S3":
+               case "SNS":
+               case "SQS":
                case "STEP_FUNCTION":
                     delimiter = "";
                     break;
