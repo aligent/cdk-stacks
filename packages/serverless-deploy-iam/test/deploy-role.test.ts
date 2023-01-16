@@ -123,7 +123,8 @@ describe('Deploy user policy', () => {
                                    "logs:CreateLogStream",
                                    "logs:DescribeLogStreams",
                                    "logs:DeleteLogStream",
-                                   "logs:FilterLogEvents"
+                                   "logs:FilterLogEvents",
+                                   "logs:TagResource"
                               ],
                               Effect: "Allow",
                               Resource: [
@@ -136,6 +137,16 @@ describe('Deploy user policy', () => {
                                         "Fn::Join": [
                                              "",
                                              ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group:/aws/apigateway/jest*"]
+                                        ]
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group:/aws/express/jest*"]
+                                        ]
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group::log-stream:*"]
                                         ]
                                    }, {
                                         "Fn::Join": [
