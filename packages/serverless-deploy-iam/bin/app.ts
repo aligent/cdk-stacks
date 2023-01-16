@@ -85,7 +85,13 @@ export class ServiceDeployIAM extends cdk.Stack {
                     {
                          name: 'CLOUD_WATCH',
                          prefix: `arn:aws:logs:${region}:${accountId}:log-group:`,
-                         qualifiers: [`/aws/lambda/${serviceName}*`, `/aws/apigateway/${serviceName}*`, `${serviceName}*`],
+                         qualifiers: [
+                              `/aws/lambda/${serviceName}*`, 
+                              `/aws/apigateway/${serviceName}*`, 
+                              `/aws/express/${serviceName}*`, 
+                              `:log-stream:*`,
+                              `${serviceName}*`
+                         ],
                          actions: [
                               "logs:CreateLogGroup",
                               "logs:DescribeLogGroups",
@@ -93,7 +99,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "logs:CreateLogStream",
                               "logs:DescribeLogStreams",
                               "logs:DeleteLogStream",
-                              "logs:FilterLogEvents"
+                              "logs:FilterLogEvents",
+                              "logs:TagResource"
                          ]
                     },
                     {
