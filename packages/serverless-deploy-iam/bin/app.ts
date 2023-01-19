@@ -69,7 +69,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           // a parameter is altered, a change will be detected.
           const dummyPolicy : ResourcePolicy = {
                name: 'DUMMY',
-               resources: [`arn:aws:iam:${region}:999999999999:group${PARAMETER_HASH}`],
+               resources: [`arn:aws:iam:${region}:999999999999:group/${PARAMETER_HASH}`],
                actions: [
                     "iam:ListUsers"
                ]
@@ -444,6 +444,12 @@ export class ServiceDeployIAM extends cdk.Stack {
                value: version,
                description: 'The version of the resources that are currently provisioned in this stack',
                exportName: `${export_prefix}cdk-stack-version`,
+          });
+
+          new cdk.CfnOutput(this, `${export_prefix}ParameterHash`, {
+               value: version,
+               description: 'A hash of the parameter values provided.',
+               exportName: `${export_prefix}parameter-hash`
           });
 
           const parameterName = `/serverless-deploy-iam/${serviceName}/version`;
