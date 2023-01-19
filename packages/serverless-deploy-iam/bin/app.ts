@@ -40,6 +40,7 @@ interface PolicyStore {
 const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : 'unknown-service'
 const STACK_SUFFIX = '-deploy-iam'
 const EXPORT_PREFIX = process.env.EXPORT_PREFIX ? process.env.EXPORT_PREFIX : SERVICE_NAME
+const PARAMETER_HASH = process.env.PARAMETER_HASH ? process.env.PARAMETER_HASH : '' 
 export class ServiceDeployIAM extends cdk.Stack {
      private policyStores: PolicyStore[];
 
@@ -59,6 +60,22 @@ export class ServiceDeployIAM extends cdk.Stack {
           const accountId = cdk.Stack.of(this).account;
           const region = cdk.Stack.of(this).region;
 
+          // CloudFormation doesn't detect a change when parameters are modified
+          // This is due to CloudFormation linking parameters by reference
+          // rather than injecting the parameter value.
+          //
+          // This dummy policy takes a hash of the parameters and uses it to create
+          // a unique policy each time the parameters are modified. This way when
+          // a parameter is altered, a change will be detected.
+          const dummyPolicy : ResourcePolicy = {
+               name: 'DUMMY',
+               prefix: `arn:aws:iam:${region}:999999999999:dummy_value`,
+               resources: [PARAMETER_HASH],
+               actions: [
+                    "iam:ListUsers"
+               ]
+          }
+
           const serviceRole: PolicyStore = {
                type: new Role(this, `ServiceRole-v${version}`, {
                     assumedBy: new CompositePrincipal(
@@ -67,6 +84,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     )
                }),
                policies: [
+                    dummyPolicy,
                     {
                          name: 'S3',
                          prefix: `arn:aws:s3:::`,
@@ -268,6 +286,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           const serviceGroup: PolicyStore = {
                type: new Group(this, `${serviceName}-deployers`),
                policies: [
+                    dummyPolicy,
                     {
                          name: 'CLOUD_FORMATION',
                          prefix: `arn:aws:cloudformation:${region}:${accountId}:stack`,
