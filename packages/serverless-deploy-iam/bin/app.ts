@@ -69,7 +69,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           // a parameter is altered, a change will be detected.
           const dummyPolicy : ResourcePolicy = {
                name: 'DUMMY',
-               resources: [`arn:aws:iam:${region}:999999999999:group/${PARAMETER_HASH}`],
+               resources: [`arn:aws::iam:999999999999:group/${PARAMETER_HASH}`],
                actions: [
                     "iam:ListUsers"
                ]
