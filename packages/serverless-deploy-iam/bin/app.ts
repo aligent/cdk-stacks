@@ -40,7 +40,8 @@ interface PolicyStore {
 const SERVICE_NAME = process.env.SERVICE_NAME ? process.env.SERVICE_NAME : 'unknown-service'
 const STACK_SUFFIX = '-deploy-iam'
 const EXPORT_PREFIX = process.env.EXPORT_PREFIX ? process.env.EXPORT_PREFIX : SERVICE_NAME
-const PARAMETER_HASH = process.env.PARAMETER_HASH ? process.env.PARAMETER_HASH : '' 
+const ENABLE_VPC_PERMISSIONS = process.env.ENABLE_VPC_PERMISSIONS === "1";
+const PARAMETER_HASH = process.env.PARAMETER_HASH ? process.env.PARAMETER_HASH : '';
 export class ServiceDeployIAM extends cdk.Stack {
      private policyStores: PolicyStore[];
 
@@ -254,8 +255,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                ]
           }
 
-          if (sharedVPCParameter.valueAsString) {
-               serviceRole.policies.concat([
+          if (ENABLE_VPC_PERMISSIONS) {
+               serviceRole.policies = serviceRole.policies.concat([
                     {
                          name: 'EC2',
                          resources: [`*`],
