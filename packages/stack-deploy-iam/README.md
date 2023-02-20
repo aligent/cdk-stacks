@@ -14,6 +14,22 @@ Additional permissions should be added to this stack and feature flagged rather 
 The CDK stack requires the stack name to be provided as an environment variable.
 This is the name of the CloudFormation stack which will be deployed.
 
+### Custom Policy Statements
+`Custom Policy Statements` extend the permission of the Stack deployment user.  
+`Custom Policy Statements` can be passed as a set of JSON files.
+
+#### Sample Policy Statement
+```json
+{
+  "Sid": "FirstStatement",
+  "Effect": "Allow",
+  "Action": "sts:AssumeRole",
+  "Resource": "arn:aws:iam::166381158005:role/Read_Secret_Role"
+}
+```
+
+Use `CUSTOM_POLICY` environment variable to pass the JSON file(s) to the stack. *Comma seperated file paths are acceptable* 
+
 ### Deploying:
 The intention is that this stack is deployed manually using the CDK CLI by an IAM user with admin privileges.
 This should then be the last deployment into the environment from outside automated pipelines.
@@ -22,6 +38,6 @@ The actual CloudFormation stack can then be created and completely managed by th
 
 Use the following command to deploy this into an environment:
 
-```
-AWS_REGION=<AWS_REGION> STACK_NAME=<STACK_NAME> npx cdk deploy --profile <AWS_PROFILE>
+```shell
+AWS_REGION=<AWS_REGION> STACK_NAME=<STACK_NAME> CUSTOM_POLICY=<JSON_FILES> npx cdk deploy --profile <AWS_PROFILE>
 ```
