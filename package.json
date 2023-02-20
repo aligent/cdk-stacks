@@ -20,8 +20,5 @@
     "scripts": {
         "build": "tsc",
         "prepublish": "tsc"
-    },
-    "dependencies": {
-        "fs": "^0.0.1-security"
     }
 }
