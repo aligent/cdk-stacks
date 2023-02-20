@@ -10,7 +10,7 @@ import {
 } from '@aws-cdk/aws-iam';
 
 const STACK_NAME = process.env.STACK_NAME
-const CUSTOM_POLICY_PATH = process.env.CUSTOM_POLICY?.split(',');
+const CUSTOM_POLICY_PATHS = process.env.CUSTOM_POLICY?.split(',');
 const STACK_SUFFIX = '-deploy-iam'
 
 class StackDeployUser extends cdk.Stack {
@@ -58,9 +58,9 @@ class StackDeployUser extends cdk.Stack {
           * See if custom policy statements are provided
           *  and custom policy statements are directly attached to the group policy
           */
-         if (CUSTOM_POLICY_PATH) {
+         if (CUSTOM_POLICY_PATHS) {
              console.log("Custom policy statement(s) has been provided")
-             CUSTOM_POLICY_PATH.forEach( (policyStatement: string) => {
+             CUSTOM_POLICY_PATHS.forEach( (policyStatement: string) => {
                  deployGroup.addToPolicy((PolicyStatement.fromJson(JSON.parse(readFileSync(policyStatement, 'utf-8')))));
                  console.log("Policy attached from: ", policyStatement);
              });
