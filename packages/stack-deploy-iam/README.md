@@ -19,13 +19,15 @@ This is the name of the CloudFormation stack which will be deployed.
 `Custom Policy Statements` can be passed as a set of JSON files.
 
 #### Sample Policy Statement
-```json
-{
-  "Sid": "FirstStatement",
-  "Effect": "Allow",
-  "Action": "sts:AssumeRole",
-  "Resource": "arn:aws:iam::166381158005:role/Read_Secret_Role"
-}
+```JSON
+[
+  {
+    "Sid": "FirstStatement",
+    "Effect": "Allow",
+    "Action": "sts:AssumeRole",
+    "Resource": "arn:aws:iam::166381158005:role/Read_Secret_Role"
+  }
+]
 ```
 
 Use `CUSTOM_POLICY` environment variable to pass the JSON file(s) to the stack. *Comma seperated file paths are acceptable* 
