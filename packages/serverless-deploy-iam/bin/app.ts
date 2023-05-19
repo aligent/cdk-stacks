@@ -163,6 +163,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                          actions: [
                               "iam:PassRole",
                               "iam:CreateRole",
+                              "iam:CreateUser",
+                              "iam:PutUserPolicy",
                               "iam:GetRole",
                               "iam:DeleteRole",
                               "iam:GetRolePolicy",
