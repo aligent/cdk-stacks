@@ -158,13 +158,20 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'IAM',
+                         prefix: `arn:aws:iam::${accountId}:user`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "iam:CreateRole",
+                              "iam:CreateUser",
+                              "iam:PutUserPolicy",
+                         ]
+                    },
+                    {
+                         name: 'IAM',
                          prefix: `arn:aws:iam::${accountId}:role`,
                          qualifiers: [`${serviceName}*`],
                          actions: [
                               "iam:PassRole",
-                              "iam:CreateRole",
-                              "iam:CreateUser",
-                              "iam:PutUserPolicy",
                               "iam:GetRole",
                               "iam:DeleteRole",
                               "iam:GetRolePolicy",
