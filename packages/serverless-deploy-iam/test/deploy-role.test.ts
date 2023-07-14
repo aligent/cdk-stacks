@@ -124,7 +124,8 @@ describe('Deploy user policy', () => {
                                    "logs:DescribeLogStreams",
                                    "logs:DeleteLogStream",
                                    "logs:FilterLogEvents",
-                                   "logs:TagResource"
+                                   "logs:TagResource",
+                                   "logs:UntagResource"
                               ],
                               Effect: "Allow",
                               Resource: [
