@@ -142,6 +142,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "lambda:InvokeFunction",
                               "lambda:ListTags",
                               "lambda:TagResource",
+                              "lambda:UntagResource",
                               "lambda:PutFunctionConcurrency",
                               "lambda:DeleteEventSourceMapping",
                               "lambda:UpdateEventSourceMapping",
