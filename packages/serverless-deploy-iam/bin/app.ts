@@ -148,7 +148,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "lambda:CreateEventSourceMapping",
                               "lambda:DeleteFunctionUrlConfig",
                               "lambda:GetFunctionUrlConfig",
-                              "lambda:ListFunctionUrlConfig",
+                              "lambda:ListFunctionUrlConfigs",
                               "lambda:UpdateFunctionUrlConfig",
                          ]
                     },
