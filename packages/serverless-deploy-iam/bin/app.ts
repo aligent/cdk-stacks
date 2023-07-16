@@ -118,7 +118,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "logs:DescribeLogStreams",
                               "logs:DeleteLogStream",
                               "logs:FilterLogEvents",
-                              "logs:TagResource"
+                              "logs:TagResource",
+                              "logs:UntagResource"
                          ]
                     },
                     {
@@ -142,6 +143,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "lambda:InvokeFunction",
                               "lambda:ListTags",
                               "lambda:TagResource",
+                              "lambda:UntagResource",
                               "lambda:PutFunctionConcurrency",
                               "lambda:DeleteEventSourceMapping",
                               "lambda:UpdateEventSourceMapping",
@@ -207,6 +209,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "states:DeleteStateMachine",
                               "states:DescribeStateMachine",
                               "states:TagResource",
+                              "states:UntagResource",
                          ]
                     },
                     {
@@ -224,7 +227,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "events:DeleteRule",
                               "events:CreateEventBus",
                               "events:DescribeEventBus",
-                              "events:TagResource"
+                              "events:TagResource",
+                              "events:UntagResource"
                          ]
                     },
                     {
@@ -262,6 +266,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "sqs:SetQueueAttributes",
                               "sqs:ChangeMessageVisibility",
                               "sqs:TagQueue",
+                              "sqs:UntagQueue",
                               "sqs:ListDeadLetterSourceQueues",
                               "sqs:CreateQueue",
                          ]
