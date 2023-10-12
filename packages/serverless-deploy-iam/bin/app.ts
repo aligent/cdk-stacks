@@ -232,6 +232,17 @@ export class ServiceDeployIAM extends cdk.Stack {
                          ]
                     },
                     {
+                         name: 'SCHEDULER',
+                         prefix: `arn:aws:scheduler:${region}:${accountId}:schedule/default/`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "scheduler:GetSchedule",
+                              "scheduler:CreateSchedule",
+                              "scheduler:UpdateSchedule",
+                              "scheduler:DeleteSchedule"
+                         ]
+                    },
+                    {
                          name: 'API_GATEWAY',
                          resources: [`*`],
                          actions: [
