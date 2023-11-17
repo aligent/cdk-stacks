@@ -243,6 +243,19 @@ export class ServiceDeployIAM extends cdk.Stack {
                          ]
                     },
                     {
+                         name: 'SCHEDULEGROUP',
+                         prefix: `arn:aws:scheduler:${region}:${accountId}:schedule-group`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                           'scheduler:GetScheduleGroup',
+                           'scheduler:CreateScheduleGroup',
+                           'scheduler:UpdateScheduleGroup',
+                           'scheduler:DeleteScheduleGroup',
+                           'scheduler:TagResource',
+                           'scheduler:ListTagsForResource'
+                         ]
+                    },
+                    {
                          name: 'API_GATEWAY',
                          resources: [`*`],
                          actions: [
