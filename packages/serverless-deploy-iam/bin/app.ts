@@ -605,7 +605,6 @@ export class ServiceDeployIAM extends cdk.Stack {
                case "EVENT_BRIDGE":
                     delimiter = ":";
                     break;
-               // TODO: add cognito
           }
 
           return qualifiers.filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
