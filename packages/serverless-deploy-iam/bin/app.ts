@@ -359,6 +359,14 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cognito-idp:UntagResource",
                               "cognito-idp:Update*",
                          ]
+                    },
+                    {
+                         name: 'COGNITO_IDP_CREATEUSERPOOL',
+                         prefix: `arn:aws:cognito-idp:${region}:${accountId}:userpool`,
+                         qualifiers: ["*"],
+                         actions: [
+                              "cognito-idp:CreateUserPool"
+                         ]
                     }
                ]
           }
