@@ -297,7 +297,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'COGNITO',
-                         prefix: `arn:aws:cognito-sync:${region}:${accountId}:identitypool/`,
+                         prefix: `arn:aws:cognito-sync:${region}:${accountId}:identitypool`,
                          qualifiers: [`${serviceName}*`],
                          actions: [
                               "cognito-sync:BulkPublish",
@@ -346,7 +346,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'COGNITO_IDP',
-                         prefix: `arn:aws:cognito-idp:${region}:${accountId}:userpool/`,
+                         prefix: `arn:aws:cognito-idp:${region}:${accountId}:userpool`,
                          qualifiers: [`${serviceName}*`, `${region}_*`],
                          actions: [
                               "cognito-idp:Create*",
