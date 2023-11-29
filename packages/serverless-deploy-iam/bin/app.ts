@@ -371,7 +371,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     {
                          name: 'COGNITO_IDP_IDENTITYPOOL',
                          prefix: `arn:aws:cognito-identity:${region}:${accountId}:identitypool`,
-                         qualifiers: [`${region}_*`],
+                         qualifiers: [`${region}:*`],
                          actions: [
                               "cognito-identity:CreateIdentityPool",
                               "cognito-identity:SetIdentityPoolRoles"
