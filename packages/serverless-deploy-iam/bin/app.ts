@@ -593,6 +593,7 @@ export class ServiceDeployIAM extends cdk.Stack {
      static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[]): string[] {
           let delimiter = "/";
           switch (serviceName) {
+               case "COGNITO":
                case "CLOUD_WATCH":
                case "LAMBDA":
                case "S3":
