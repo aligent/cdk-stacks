@@ -428,7 +428,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                          name: 'API_GATEWAY',
                          resources: [`arn:aws:apigateway:${region}::/restapis/*/stages/*`],
                          actions: [
-                              "apigateway:PATCH"
+                              "apigateway:PATCH",
+                              "apigateway:POST"
                          ]
                     }
                ]
