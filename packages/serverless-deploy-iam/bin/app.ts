@@ -175,7 +175,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     {
                          name: 'IAM',
                          prefix: `arn:aws:iam::${accountId}:role`,
-                         qualifiers: [`${serviceName}*`],
+                         qualifiers: [`*${serviceName}*`],
                          actions: [
                               "iam:CreateRole",
                               "iam:PassRole",
@@ -297,7 +297,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'COGNITO',
-                         prefix: `arn:aws:cognito-sync:${region}:${accountId}:identitypool/`,
+                         prefix: `arn:aws:cognito-sync:${region}:${accountId}:identitypool`,
                          qualifiers: [`${serviceName}*`],
                          actions: [
                               "cognito-sync:BulkPublish",
@@ -346,7 +346,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'COGNITO_IDP',
-                         prefix: `arn:aws:cognito-idp:${region}:${accountId}:userpool/`,
+                         prefix: `arn:aws:cognito-idp:${region}:${accountId}:userpool`,
                          qualifiers: [`${serviceName}*`, `${region}_*`],
                          actions: [
                               "cognito-idp:Create*",
@@ -358,6 +358,23 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cognito-idp:TagResource",
                               "cognito-idp:UntagResource",
                               "cognito-idp:Update*",
+                         ]
+                    },
+                    {
+                         name: 'COGNITO_IDP_CREATEUSERPOOL',
+                         prefix: `arn:aws:cognito-idp:${region}:${accountId}:userpool`,
+                         qualifiers: ["*"],
+                         actions: [
+                              "cognito-idp:CreateUserPool"
+                         ]
+                    },
+                    {
+                         name: 'COGNITO_IDP_IDENTITYPOOL',
+                         prefix: `arn:aws:cognito-identity:${region}:${accountId}:identitypool`,
+                         qualifiers: [`${region}:*`],
+                         actions: [
+                              "cognito-identity:CreateIdentityPool",
+                              "cognito-identity:SetIdentityPoolRoles"
                          ]
                     }
                ]
@@ -584,6 +601,7 @@ export class ServiceDeployIAM extends cdk.Stack {
      static formatResourceQualifier(serviceName: string, prefix: string, qualifiers: string[]): string[] {
           let delimiter = "/";
           switch (serviceName) {
+               case "COGNITO":
                case "CLOUD_WATCH":
                case "LAMBDA":
                case "S3":
@@ -599,7 +617,6 @@ export class ServiceDeployIAM extends cdk.Stack {
                case "EVENT_BRIDGE":
                     delimiter = ":";
                     break;
-               // TODO: add cognito
           }
 
           return qualifiers.filter(Boolean).map((qualifier) => { return `${prefix}${delimiter}${qualifier}` })
