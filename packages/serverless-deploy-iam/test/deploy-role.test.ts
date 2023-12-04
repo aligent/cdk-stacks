@@ -35,7 +35,10 @@ describe('Deploy user policy', () => {
                PolicyDocument: {
                     Statement: arrayWith(
                          objectLike({
-                              Action: "cloudformation:ValidateTemplate",
+                              Action: [
+                                   "cloudformation:ValidateTemplate",
+                                   "cloudformation:ListExports"
+                              ],
                               Effect: "Allow",
                               Resource: "*"
                          }),
