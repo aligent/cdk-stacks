@@ -412,9 +412,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'CLOUDFRONT-DISTRIBUTION',
-                         resources: [
-                              `arn:aws:cloudfront::${accountId}:distribution/*`
-                         ],
+                         resources: [ `arn:aws:cloudfront::${accountId}:distribution/*` ],
                          actions: [
                               "cloudfront:CreateDistribution",
                               "cloudfront:DeleteDistribution",
@@ -561,6 +559,13 @@ export class ServiceDeployIAM extends cdk.Stack {
                          actions: [
                               "apigateway:PATCH",
                               "apigateway:POST"
+                         ]
+                    },
+                    {
+                         name: 'DISTRIBUTION',
+                         resources: [ `arn:aws:cloudfront::${accountId}:distribution/*` ],
+                         actions: [
+                              "cloudfront:CreateInvalidation"
                          ]
                     }
                ]
