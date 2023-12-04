@@ -390,21 +390,14 @@ export class ServiceDeployIAM extends cdk.Stack {
                     {
                          name: 'CLOUDFRONT-FUNCTION',
                          resources: [
-                              `arn:aws:cloudfront::${accountId}:function/*`
+                              `arn:aws:cloudfront::${accountId}:function/${serviceName}*`
                          ],
                          actions: [
                               "cloudfront:CreateFunction",
                               "cloudfront:DescribeFunction",
-                              "cloudfront:PublishFunction"
-                         ]
-                    },
-                    {
-                         name: 'CLOUDFRONT-FUNCTION',
-                         resources: [
-                              `arn:aws:cloudfront::${accountId}:function/${serviceName}*`
-                         ],
-                         actions: [
-                              "cloudfront:DeleteFunction"
+                              "cloudfront:DeleteFunction",
+                              "cloudfront:PublishFunction",
+                              "cloudfront:GetFunction"
                          ]
                     }
                ]
