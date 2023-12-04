@@ -440,8 +440,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cloudformation:ListStackResources",
                               "cloudformation:DescribeStackResource",
                               "cloudformation:DescribeStackResources",
-                              "cloudformation:GetTemplate",
-                              "cloudformation:ListExports"
+                              "cloudformation:GetTemplate"
                          ]
                     },
                     {
@@ -449,6 +448,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                          resources: [`*`],
                          actions: [
                               "cloudformation:ValidateTemplate",
+                              "cloudformation:ListExports"
                          ]
                     },
                     {
