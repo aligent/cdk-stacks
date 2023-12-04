@@ -378,19 +378,28 @@ export class ServiceDeployIAM extends cdk.Stack {
                          ]
                     },
                     {
-                         name: 'CLOUDFRONT',
+                         name: 'CLOUDFRONT-OAI',
                          resources: [
-                              `arn:aws:cloudfront::${accountId}:origin-access-identity/*`,
-                              `arn:aws:cloudfront::${accountId}:function/*`
+                              `arn:aws:cloudfront::${accountId}:origin-access-identity/*`
                          ],
                          actions: [
                               "cloudfront:CreateCloudFrontOriginAccessIdentity",
-                              "cloudfront:CreateFunction",
-                              "cloudfront:DescribeFunction"
+                              "cloudfront:DeleteCloudFrontOriginAccessIdentity"
                          ]
                     },
                     {
-                         name: 'CLOUDFRONT',
+                         name: 'CLOUDFRONT-FUNCTION',
+                         resources: [
+                              `arn:aws:cloudfront::${accountId}:function/*`
+                         ],
+                         actions: [
+                              "cloudfront:CreateFunction",
+                              "cloudfront:DescribeFunction",
+                              "cloudfront:PublishFunction"
+                         ]
+                    },
+                    {
+                         name: 'CLOUDFRONT-FUNCTION',
                          resources: [
                               `arn:aws:cloudfront::${accountId}:function/${serviceName}*`
                          ],
