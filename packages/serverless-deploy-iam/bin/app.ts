@@ -420,7 +420,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cloudfront:DeleteDistribution",
                               "cloudfront:GetDistribution",
                               "cloudfront:ListDistributions",
-                              "cloudfront:UpdateDistribution"
+                              "cloudfront:UpdateDistribution",
+                              "cloudfront:TagResource"
                          ]
                     }
                ]
