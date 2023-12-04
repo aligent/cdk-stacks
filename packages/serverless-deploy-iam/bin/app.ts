@@ -409,6 +409,19 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cloudfront:PublishFunction",
                               "cloudfront:GetFunction"
                          ]
+                    },
+                    {
+                         name: 'CLOUDFRONT-DISTRIBUTION',
+                         resources: [
+                              `arn:aws:cloudfront::${accountId}:distribution/*`
+                         ],
+                         actions: [
+                              "cloudfront:CreateDistribution",
+                              "cloudfront:DeleteDistribution",
+                              "cloudfront:GetDistribution",
+                              "cloudfront:ListDistributions",
+                              "cloudfront:UpdateDistribution"
+                         ]
                     }
                ]
           }
