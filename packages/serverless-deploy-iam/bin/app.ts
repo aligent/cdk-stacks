@@ -175,7 +175,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     {
                          name: 'IAM',
                          prefix: `arn:aws:iam::${accountId}:role`,
-                         qualifiers: [`*${serviceName}*`],
+                         qualifiers: [`${serviceName}*`, `Cognito-${serviceName}*`],
                          actions: [
                               "iam:CreateRole",
                               "iam:PassRole",
