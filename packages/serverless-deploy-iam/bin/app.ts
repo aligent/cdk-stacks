@@ -376,6 +376,17 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cognito-identity:CreateIdentityPool",
                               "cognito-identity:SetIdentityPoolRoles"
                          ]
+                    },
+                    {
+                         name: 'CLOUDFRONT',
+                         resources: [
+                              `arn:aws:cloudfront::${accountId}:origin-access-identity/*`,
+                              `arn:aws:cloudfront::${accountId}:function/*`
+                         ],
+                         actions: [
+                              "cloudfront:CreateCloudFrontOriginAccessIdentity",
+                              "cloudfront:CreateFunction"
+                         ]
                     }
                ]
           }
@@ -429,7 +440,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cloudformation:ListStackResources",
                               "cloudformation:DescribeStackResource",
                               "cloudformation:DescribeStackResources",
-                              "cloudformation:GetTemplate"
+                              "cloudformation:GetTemplate",
+                              "cloudformation:ListExports "
                          ]
                     },
                     {
