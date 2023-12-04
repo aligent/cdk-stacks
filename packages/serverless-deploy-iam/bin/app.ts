@@ -385,7 +385,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                          ],
                          actions: [
                               "cloudfront:CreateCloudFrontOriginAccessIdentity",
-                              "cloudfront:CreateFunction"
+                              "cloudfront:CreateFunction",
+                              "cloudfront:DescribeFunction"
                          ]
                     }
                ]
