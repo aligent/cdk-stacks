@@ -376,6 +376,51 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cognito-identity:CreateIdentityPool",
                               "cognito-identity:SetIdentityPoolRoles"
                          ]
+                    },
+                    {
+                         name: 'CLOUDFRONT-OAI',
+                         resources: [
+                              `arn:aws:cloudfront::${accountId}:origin-access-identity/*`
+                         ],
+                         actions: [
+                              "cloudfront:CreateCloudFrontOriginAccessIdentity",
+                              "cloudfront:GetCloudFrontOriginAccessIdentity",
+                              "cloudfront:DeleteCloudFrontOriginAccessIdentity"
+                         ]
+                    },
+                    {
+                         name: 'CLOUDFRONT-FUNCTION',
+                         resources: [
+                              `arn:aws:cloudfront::${accountId}:function/*`
+                         ],
+                         actions: [
+                              "cloudfront:CreateFunction"
+                         ]
+                    },
+                    {
+                         name: 'CLOUDFRONT-FUNCTION',
+                         resources: [
+                              `arn:aws:cloudfront::${accountId}:function/${serviceName}*`
+                         ],
+                         actions: [
+                              "cloudfront:CreateFunction",
+                              "cloudfront:DescribeFunction",
+                              "cloudfront:DeleteFunction",
+                              "cloudfront:PublishFunction",
+                              "cloudfront:GetFunction"
+                         ]
+                    },
+                    {
+                         name: 'CLOUDFRONT-DISTRIBUTION',
+                         resources: [ `arn:aws:cloudfront::${accountId}:distribution/*` ],
+                         actions: [
+                              "cloudfront:CreateDistribution",
+                              "cloudfront:DeleteDistribution",
+                              "cloudfront:GetDistribution",
+                              "cloudfront:ListDistributions",
+                              "cloudfront:UpdateDistribution",
+                              "cloudfront:TagResource"
+                         ]
                     }
                ]
           }
@@ -437,6 +482,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                          resources: [`*`],
                          actions: [
                               "cloudformation:ValidateTemplate",
+                              "cloudformation:ListExports"
                          ]
                     },
                     {
@@ -513,6 +559,13 @@ export class ServiceDeployIAM extends cdk.Stack {
                          actions: [
                               "apigateway:PATCH",
                               "apigateway:POST"
+                         ]
+                    },
+                    {
+                         name: 'DISTRIBUTION',
+                         resources: [ `arn:aws:cloudfront::${accountId}:distribution/*` ],
+                         actions: [
+                              "cloudfront:CreateInvalidation"
                          ]
                     }
                ]
