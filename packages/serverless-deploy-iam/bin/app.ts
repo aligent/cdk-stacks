@@ -147,7 +147,6 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "lambda:PutFunctionConcurrency",
                               "lambda:DeleteEventSourceMapping",
                               "lambda:UpdateEventSourceMapping",
-                              "lambda:CreateEventSourceMapping",
                               "lambda:CreateFunctionUrlConfig",
                               "lambda:DeleteFunctionUrlConfig",
                               "lambda:GetFunctionUrlConfig",
@@ -160,7 +159,8 @@ export class ServiceDeployIAM extends cdk.Stack {
                          resources: [`*`],
                          actions: [
                               "lambda:GetEventSourceMapping",
-                              "lambda:ListEventSourceMappings"
+                              "lambda:ListEventSourceMappings",
+                              "lambda:CreateEventSourceMapping"
                          ]
                     },
                     {
