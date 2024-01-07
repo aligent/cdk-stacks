@@ -152,6 +152,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "lambda:GetFunctionUrlConfig",
                               "lambda:ListFunctionUrlConfigs",
                               "lambda:UpdateFunctionUrlConfig",
+                              "lambda:DeleteFunctionConcurrency",
                          ]
                     },
                     {
