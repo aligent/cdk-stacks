@@ -128,7 +128,9 @@ describe('Deploy user policy', () => {
                                    "logs:DeleteLogStream",
                                    "logs:FilterLogEvents",
                                    "logs:TagResource",
-                                   "logs:UntagResource"
+                                   "logs:UntagResource",
+                                   "logs:DescribeMetricFilters",
+                                   "logs:PutMetricFilter"
                               ],
                               Effect: "Allow",
                               Resource: [
@@ -169,8 +171,58 @@ describe('Deploy user policy', () => {
                }
           }));
      });
-});
 
+     test('has correct permission to deploy CloudWatch alarms', () => {
+          const app = new cdk.App();
+          const stack = new ServiceDeployIAM(app, 'jest-deploy-iam');
+          expectCDK(stack).to(haveResourceLike('AWS::IAM::Policy', {
+               PolicyName: stringLike("ServiceRolev1DefaultPolicy*"),
+               PolicyDocument: {
+                    Statement: arrayWith(
+                         objectLike({
+                              Action: [
+                                   "cloudwatch:ListMetrics",
+                                   "cloudwatch:ListMetricStreams",
+                                   "cloudwatch:ListTagsForResource",
+                                   "cloudwatch:ListDashboards",
+                                   "cloudwatch:DescribeAlarms",
+                                   "cloudwatch:DeleteAlarms",
+                                   "cloudwatch:EnableAlarmActions",
+                                   "cloudwatch:PutMetricAlarm",
+                                   "cloudwatch:PutDashboard",
+                                   "cloudwatch:PutMetricData",
+                                   "cloudwatch:PutMetricStream",
+                                   "cloudwatch:SetAlarmState",
+                                   "cloudwatch:TagResource",
+                                   "cloudwatch:StartMetricStreams",
+                                   "cloudwatch:StopMetricStreams"
+                              ],
+                              Effect: "Allow",
+                              Resource: [
+                                   {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:cloudwatch:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":alarm:TaskTimedOutAlarm"]
+                                        ]
+                                   },
+                                   {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:cloudwatch:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":alarm:jest*"]
+                                        ]
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
+                                             ["arn:aws:cloudwatch:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":alarm:", { "Ref": "cloudwatchalarmsQualifier" }]
+                                        ]
+                                   }
+                              ]
+                         }),
+                    )
+               }
+          }));
+     });
+});
 
 describe('CloudFormation service policy', () => {
      test('is created', () => {

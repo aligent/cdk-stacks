@@ -119,7 +119,34 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "logs:DeleteLogStream",
                               "logs:FilterLogEvents",
                               "logs:TagResource",
-                              "logs:UntagResource"
+                              "logs:UntagResource",
+                              "logs:DescribeMetricFilters",
+                              "logs:PutMetricFilter"
+                         ]
+                    },
+                    {
+                         name: 'CLOUD_WATCH_ALARMS',
+                         prefix: `arn:aws:cloudwatch:${region}:${accountId}:alarm:`,
+                         qualifiers: [
+                              `TaskTimedOutAlarm`,
+                              `${serviceName}*`
+                         ],
+                         actions: [
+                              "cloudwatch:ListMetrics",
+                              "cloudwatch:ListMetricStreams",
+                              "cloudwatch:ListTagsForResource",
+                              "cloudwatch:ListDashboards",
+                              "cloudwatch:DescribeAlarms",
+                              "cloudwatch:DeleteAlarms",
+                              "cloudwatch:EnableAlarmActions",
+                              "cloudwatch:PutMetricAlarm",
+                              "cloudwatch:PutDashboard",
+                              "cloudwatch:PutMetricData",
+                              "cloudwatch:PutMetricStream",
+                              "cloudwatch:SetAlarmState",
+                              "cloudwatch:TagResource",
+                              "cloudwatch:StartMetricStreams",
+                              "cloudwatch:StopMetricStreams"
                          ]
                     },
                     {
@@ -657,6 +684,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           switch (serviceName) {
                case "COGNITO":
                case "CLOUD_WATCH":
+               case "CLOUD_WATCH_ALARMS":
                case "LAMBDA":
                case "S3":
                case "SNS":
