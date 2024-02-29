@@ -450,6 +450,28 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "cloudfront:UpdateDistribution",
                               "cloudfront:TagResource"
                          ]
+                    },
+                    {
+                         name: 'KMS',
+                         prefix: `arn:aws:kms:${region}:${accountId}:key`,
+                         qualifiers: [`${serviceName}*`],
+                         actions: [
+                              "kms:CreateKey",
+                              "kms:DescribeKey",
+                              "kms:DisableKey",
+                              "kms:EnableKey",
+                              "kms:Encrypt",
+                              "kms:Generate*",
+                              "kms:GetKeyPolicy",
+                              "kms:GetPublicKey",
+                              "kms:ListKeys",
+                              "kms:ListResourceTags",
+                              "kms:PutKeyPolicy",
+                              "kms:ScheduleKeyDeletion",
+                              "kms:Sign",
+                              "kms:TagResource",
+                              "kms:UntagResource"
+                         ]
                     }
                ]
           }
@@ -690,6 +712,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                case "S3":
                case "SNS":
                case "SQS":
+               case "KMS":
                case "STEP_FUNCTION":
                     delimiter = "";
                     break;
