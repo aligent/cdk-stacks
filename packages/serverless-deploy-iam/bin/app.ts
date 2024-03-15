@@ -454,8 +454,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                     },
                     {
                          name: 'KMS',
-                         prefix: `arn:aws:kms:${region}:${accountId}:key`,
-                         qualifiers: [`${serviceName}*`],
+                         resources: [`arn:aws:kms:${region}:${accountId}:key/*`],
                          actions: [
                               "kms:CreateKey",
                               "kms:DescribeKey",
