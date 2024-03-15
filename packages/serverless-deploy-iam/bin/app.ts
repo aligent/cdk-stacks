@@ -713,7 +713,6 @@ export class ServiceDeployIAM extends cdk.Stack {
                case "S3":
                case "SNS":
                case "SQS":
-               case "KMS":
                case "STEP_FUNCTION":
                     delimiter = "";
                     break;
