@@ -1,14 +1,17 @@
 #!/usr/bin/env node
 import * as cdk from '@aws-cdk/core';
 import * as ssm from '@aws-cdk/aws-ssm';
-import { 
-   PolicyStatement, 
-   Effect,
-   Group,
-   User
+import { readFileSync } from "fs";
+import {
+    PolicyStatement,
+    Effect,
+    Group,
+    User
 } from '@aws-cdk/aws-iam';
+import * as process from "process";
 
 const STACK_NAME = process.env.STACK_NAME
+const CUSTOM_POLICY_PATHS = process.env.CUSTOM_POLICY?.split(',');
 const STACK_SUFFIX = '-deploy-iam'
 
 class StackDeployUser extends cdk.Stack {
@@ -51,6 +54,30 @@ class StackDeployUser extends cdk.Stack {
                     ]
                })
           );
+
+         /**
+          * See if custom policy statements are provided
+          *  and custom policy statements are directly attached to the group policy
+          */
+         if (CUSTOM_POLICY_PATHS) {
+             console.log("custom policy statement(s) has been provided")
+             try {
+                 CUSTOM_POLICY_PATHS.forEach((policyDocument: string) => {
+                     const statements = JSON.parse(readFileSync(policyDocument, 'utf-8'))
+                     statements.forEach((statement: string) => {
+                         deployGroup.addToPolicy((PolicyStatement.fromJson(statement)));
+                     });
+                     console.log("policy attached from: ", policyDocument);
+                 });
+             } catch (e){
+                 if (e instanceof TypeError) {
+                     console.error("custom policy statements should be a JSON array: ", e)
+                 } else {
+                     console.error("something went wrong when injecting custom policies: ", e)
+                 }
+                 process.exit(-1);
+             }
+         }
 
           deployUser.addToGroup(deployGroup);
 
