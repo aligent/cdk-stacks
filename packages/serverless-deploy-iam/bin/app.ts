@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-import * as cdk from '@aws-cdk/core';
-import * as ssm from '@aws-cdk/aws-ssm';
 import {
-     Role,
-     ServicePrincipal,
      CompositePrincipal,
-     PolicyStatement,
+     Conditions,
      Effect,
      Group,
-     User,
-     Conditions
+     PolicyStatement,
+     Role,
+     ServicePrincipal,
+     User
 } from '@aws-cdk/aws-iam';
+import * as ssm from '@aws-cdk/aws-ssm';
+import * as cdk from '@aws-cdk/core';
 import { CfnParameter } from '@aws-cdk/core';
 
 interface Policy {
@@ -608,6 +608,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                          prefix: `arn:aws:apigateway:${region}::/restapis/*/stages`,
                          qualifiers: [`*`],
                          actions: [
+                              "apigateway:GET",
                               "apigateway:PATCH",
                               "apigateway:POST"
                          ]
