@@ -130,7 +130,10 @@ describe('Deploy user policy', () => {
                                    "logs:TagResource",
                                    "logs:UntagResource",
                                    "logs:DescribeMetricFilters",
-                                   "logs:PutMetricFilter"
+                                   "logs:PutMetricFilter",
+                                   "logs:ListTagsForResource",
+                                   "logs:PutDataProtectionPolicy",
+                                   "logs:UpdateDataProtectionPolicy",
                               ],
                               Effect: "Allow",
                               Resource: [
