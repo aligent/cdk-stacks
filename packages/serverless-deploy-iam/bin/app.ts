@@ -104,9 +104,9 @@ export class ServiceDeployIAM extends cdk.Stack {
                          name: 'CLOUD_WATCH',
                          prefix: `arn:aws:logs:${region}:${accountId}:log-group:`,
                          qualifiers: [
-                              `/aws/lambda/${serviceName}*`, 
-                              `/aws/apigateway/${serviceName}*`, 
-                              `/aws/express/${serviceName}*`, 
+                              `/aws/lambda/${serviceName}*`,
+                              `/aws/apigateway/${serviceName}*`,
+                              `/aws/express/${serviceName}*`,
                               `:log-stream:*`,
                               `${serviceName}*`
                          ],
@@ -121,8 +121,18 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "logs:TagResource",
                               "logs:UntagResource",
                               "logs:DescribeMetricFilters",
-                              "logs:PutMetricFilter"
+                              "logs:PutMetricFilter",
+                              "logs:ListTagsForResource",
+                              "logs:PutDataProtectionPolicy",
+                              "logs:UpdateDataProtectionPolicy",
                          ]
+                    },
+                    {
+                         name: 'CLOUD_WATCH',
+                         resources: ['*'],
+                         actions: [
+                              "logs:DeleteDataProtectionPolicy"
+                         ] 
                     },
                     {
                          name: 'CLOUD_WATCH_ALARMS',
@@ -210,11 +220,13 @@ export class ServiceDeployIAM extends cdk.Stack {
                               "iam:PassRole",
                               "iam:GetRole",
                               "iam:DeleteRole",
+                              "iam:UpdateRole",
                               "iam:GetRolePolicy",
                               "iam:DeleteRolePolicy",
                               "iam:PutRolePolicy",
                               "iam:DetachRolePolicy",
                               "iam:AttachRolePolicy",
+                              "iam:UpdateAssumeRolePolicy",
                          ]
                     },
                     {
