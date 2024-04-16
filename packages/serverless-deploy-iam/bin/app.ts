@@ -107,6 +107,7 @@ export class ServiceDeployIAM extends cdk.Stack {
                               `/aws/lambda/${serviceName}*`,
                               `/aws/apigateway/${serviceName}*`,
                               `/aws/express/${serviceName}*`,
+                              `/aws/stepfunctions/${serviceName}*`,
                               `:log-stream:*`,
                               `${serviceName}*`
                          ],
