@@ -155,6 +155,11 @@ describe('Deploy user policy', () => {
                                    }, {
                                         "Fn::Join": [
                                              "",
+                                             ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group:/aws/stepfunctions/jest*"]
+                                        ]
+                                   }, {
+                                        "Fn::Join": [
+                                             "",
                                              ["arn:aws:logs:", { "Ref": "AWS::Region" }, ":", { "Ref": "AWS::AccountId" }, ":log-group::log-stream:*"]
                                         ]
                                    }, {
