@@ -101,7 +101,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           actions: ["s3:ListAllMyBuckets"],
         },
         {
-          name: "CLOUD_WATCH",
+          name: "CLOUD_WATCH_LOGS",
           prefix: `arn:aws:logs:${region}:${accountId}:log-group:`,
           qualifiers: [
             `/aws/lambda/${serviceName}*`,
@@ -114,7 +114,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           actions: ["logs:*"],
         },
         {
-          name: "CLOUD_WATCH",
+          name: "CLOUD_WATCH_LOGS",
           resources: ["*"],
           actions: ["logs:DeleteDataProtectionPolicy"],
         },
@@ -611,7 +611,7 @@ export class ServiceDeployIAM extends cdk.Stack {
     let delimiter = "/";
     switch (serviceName) {
       case "COGNITO":
-      case "CLOUD_WATCH":
+      case "CLOUD_WATCH_LOGS":
       case "CLOUD_WATCH_ALARMS":
       case "LAMBDA":
       case "S3":

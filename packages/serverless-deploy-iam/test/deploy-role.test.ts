@@ -55,18 +55,14 @@ describe("Deploy user policy", () => {
             objectLike({
               Action: [
                 "cloudformation:CreateStack",
-                "cloudformation:DescribeStacks",
+                "cloudformation:Describe*",
+                "cloudformation:List*",
+                "cloudformation:Get*",
                 "cloudformation:DeleteStack",
-                "cloudformation:DescribeStackEvents",
                 "cloudformation:UpdateStack",
                 "cloudformation:ExecuteChangeSet",
                 "cloudformation:CreateChangeSet",
                 "cloudformation:DeleteChangeSet",
-                "cloudformation:DescribeChangeSet",
-                "cloudformation:ListStackResources",
-                "cloudformation:DescribeStackResource",
-                "cloudformation:DescribeStackResources",
-                "cloudformation:GetTemplate",
               ],
               Effect: "Allow",
               Resource: [
@@ -148,7 +144,7 @@ describe("Deploy user policy", () => {
     );
   });
 
-  test("has correct CloudWatch permissions", () => {
+  test("has correct CloudWatch logs permissions", () => {
     const app = new cdk.App();
     const stack = new ServiceDeployIAM(app, "jest-deploy-iam");
     expectCDK(stack).to(
@@ -157,22 +153,7 @@ describe("Deploy user policy", () => {
         PolicyDocument: {
           Statement: arrayWith(
             objectLike({
-              Action: [
-                "logs:CreateLogGroup",
-                "logs:DescribeLogGroups",
-                "logs:DeleteLogGroup",
-                "logs:CreateLogStream",
-                "logs:DescribeLogStreams",
-                "logs:DeleteLogStream",
-                "logs:FilterLogEvents",
-                "logs:TagResource",
-                "logs:UntagResource",
-                "logs:DescribeMetricFilters",
-                "logs:PutMetricFilter",
-                "logs:ListTagsForResource",
-                "logs:PutDataProtectionPolicy",
-                "logs:UpdateDataProtectionPolicy",
-              ],
+              Action: ["logs:*"],
               Effect: "Allow",
               Resource: [
                 {
@@ -278,17 +259,11 @@ describe("Deploy user policy", () => {
           Statement: arrayWith(
             objectLike({
               Action: [
-                "cloudwatch:ListMetrics",
-                "cloudwatch:ListMetricStreams",
-                "cloudwatch:ListTagsForResource",
-                "cloudwatch:ListDashboards",
+                "cloudwatch:List*",
                 "cloudwatch:DescribeAlarms",
                 "cloudwatch:DeleteAlarms",
                 "cloudwatch:EnableAlarmActions",
-                "cloudwatch:PutMetricAlarm",
-                "cloudwatch:PutDashboard",
-                "cloudwatch:PutMetricData",
-                "cloudwatch:PutMetricStream",
+                "cloudwatch:Put*",
                 "cloudwatch:SetAlarmState",
                 "cloudwatch:TagResource",
                 "cloudwatch:StartMetricStreams",
