@@ -1,8 +1,6 @@
 import * as cdk from "@aws-cdk/core";
 import {
   expect as expectCDK,
-  matchTemplate,
-  MatchStyle,
   haveResource,
   haveResourceLike,
   countResources,

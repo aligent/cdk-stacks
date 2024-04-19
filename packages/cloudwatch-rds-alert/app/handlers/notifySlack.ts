@@ -5,10 +5,10 @@ const WEBHOOK_URL_PARAMETER = process.env.WEBHOOK_URL_PARAMETER as string;
 const ALERT_USERNAME = process.env.ALERT_USERNAME as string;
 const ALERT_CHANNEL = process.env.ALERT_CHANNEL as string;
 
-const AWS = require("aws-sdk");
+import * as AWS from "aws-sdk";
 const SSM = new AWS.SSM();
 // var responseFromSSM = null;
-var parameter = {
+const parameter = {
   Name: WEBHOOK_URL_PARAMETER,
   WithDecryption: true,
 };
@@ -39,8 +39,8 @@ export const getFormattedSlackMessage = (snsMessage: string) => {
 };
 
 interface NotifySlackOutput {
-  event: string;
-  ALERT_CHANNEL: string;
+  event?: string;
+  ALERT_CHANNEL?: string;
   status_code: number;
 }
 
@@ -67,12 +67,14 @@ export const handler = async (
   event: SNSEvent,
   _context: Context
 ): Promise<NotifySlackOutput> => {
-  const functionConfig = await initPromise; // just wait until
+  await initPromise; // just wait until
   const message = getFormattedMessage(ALERT_CHANNEL, event);
   console.log("Message formatted from event: ", message);
   if (!ALERT_CHANNEL) {
     console.log("No alert channel specified - skipping...");
-    return null as any;
+    return {
+      status_code: 400,
+    };
   }
   const response = await sendAlertToChannel(ALERT_CHANNEL, message);
   console.log(

@@ -27,9 +27,7 @@ const WEBHOOK_URL_PARAMETER = process.env.WEBHOOK_URL_PARAMETER as string;
 const ALERT_USERNAME = process.env.ALERT_USERNAME as string;
 const ALERT_CHANNEL = process.env.ALERT_CHANNEL as string;
 
-if (typeof RDSINSTANCES === "string") {
-  var instances = RDSINSTANCES.split(",");
-}
+const instances = RDSINSTANCES.split(",");
 
 export class CloudwatchRDSAlertStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
@@ -37,40 +35,38 @@ export class CloudwatchRDSAlertStack extends Stack {
 
     const topic = new aws_sns.Topic(this, "SNS");
 
-    for (var i in instances) {
-      const db = aws_rds.DatabaseInstance.fromDatabaseInstanceAttributes(
-        this,
-        instances[i],
-        {
-          instanceEndpointAddress: "garbage value", // Can be an arbitrary value
-          instanceIdentifier: instances[i], // CloudWatch looks out for this value
-          port: 3306, // Can be an arbitrary value
-          securityGroups: [
-            aws_ec2.SecurityGroup.fromLookupById(
-              this,
-              instances[i] + "-sg",
-              `${SECURITYGROUP}`
-            ),
-          ], // SG ID has to be valid
-        }
-      );
-      // Only "Average over 5 minutes" is available, hence one evaluation only before firing the alarm off:
-      // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseInstance.html#metricwbrcpuutilizationprops
-      const alarm_cpu = new aws_cloudwatch.Alarm(
-        this,
-        instances[i] + "-alarm",
-        {
-          alarmName: instances[i] + " database CPU usage alert", // Notification title if sent to Slack
+    instances.forEach(instance => {
+      {
+        const db = aws_rds.DatabaseInstance.fromDatabaseInstanceAttributes(
+          this,
+          instance,
+          {
+            instanceEndpointAddress: "garbage value", // Can be an arbitrary value
+            instanceIdentifier: instance, // CloudWatch looks out for this value
+            port: 3306, // Can be an arbitrary value
+            securityGroups: [
+              aws_ec2.SecurityGroup.fromLookupById(
+                this,
+                instance + "-sg",
+                `${SECURITYGROUP}`
+              ),
+            ], // SG ID has to be valid
+          }
+        );
+        // Only "Average over 5 minutes" is available, hence one evaluation only before firing the alarm off:
+        // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_rds.DatabaseInstance.html#metricwbrcpuutilizationprops
+        const alarm_cpu = new aws_cloudwatch.Alarm(this, instance + "-alarm", {
+          alarmName: instance + " database CPU usage alert", // Notification title if sent to Slack
           evaluationPeriods: 1, // The number of periods over which data is compared to the specified threshold. ( 5 minute )
           datapointsToAlarm: 1, // The number of datapoints that must be breaching to trigger the alarm.
           threshold: 30, // over x %
           metric: db.metricCPUUtilization(),
           treatMissingData: aws_cloudwatch.TreatMissingData.BREACHING,
-        }
-      );
-      alarm_cpu.addAlarmAction(new aws_cloudwatch_actions.SnsAction(topic));
-      alarm_cpu.addOkAction(new aws_cloudwatch_actions.SnsAction(topic));
-    }
+        });
+        alarm_cpu.addAlarmAction(new aws_cloudwatch_actions.SnsAction(topic));
+        alarm_cpu.addOkAction(new aws_cloudwatch_actions.SnsAction(topic));
+      }
+    });
 
     const notifySlack = new aws_lambda_nodejs.NodejsFunction(
       this,
