@@ -153,7 +153,7 @@ describe("Deploy user policy", () => {
         PolicyDocument: {
           Statement: arrayWith(
             objectLike({
-              Action: ["logs:*"],
+              Action: "logs:*",
               Effect: "Allow",
               Resource: [
                 {
