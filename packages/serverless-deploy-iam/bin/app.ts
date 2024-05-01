@@ -183,6 +183,9 @@ export class ServiceDeployIAM extends cdk.Stack {
             "dynamodb:CreateTable",
             "dynamodb:UpdateTable",
             "dynamodb:DeleteTable",
+            "dynamodb:ListTagsOfResource",
+            "dynamodb:TagResource",
+            "dynamodb:UntagResource",
           ],
         },
         {
