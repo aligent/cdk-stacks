@@ -221,7 +221,7 @@ export class ServiceDeployIAM extends cdk.Stack {
             "iam:AttachRolePolicy",
             "iam:UpdateAssumeRolePolicy",
             "iam:TagRole",
-            "iam:UntagRole"
+            "iam:UntagRole",
           ],
         },
         {
