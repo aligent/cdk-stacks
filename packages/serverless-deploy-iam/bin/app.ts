@@ -188,6 +188,7 @@ export class ServiceDeployIAM extends cdk.Stack {
             "dynamodb:ListTagsOfResource",
             "dynamodb:TagResource",
             "dynamodb:UntagResource",
+            "dynamodb:*TimeToLive"
           ],
         },
         {
