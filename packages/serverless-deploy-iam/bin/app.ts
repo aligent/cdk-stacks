@@ -241,7 +241,6 @@ export class ServiceDeployIAM extends cdk.Stack {
           actions: [
             "scheduler:GetScheduleGroup",
             "scheduler:CreateScheduleGroup",
-            "scheduler:UpdateScheduleGroup",
             "scheduler:DeleteScheduleGroup",
             "scheduler:TagResource",
             "scheduler:ListTagsForResource",
@@ -541,7 +540,7 @@ export class ServiceDeployIAM extends cdk.Stack {
             new CfnParameter(this, parameterName, {
               type: "String",
               description: `Custom qualifier values provided for ${policy.name}`,
-              default: "",
+              default: PARAMETER_HASH,
             })
           );
         }
