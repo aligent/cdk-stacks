@@ -503,20 +503,7 @@ export class ServiceDeployIAM extends cdk.Stack {
         // Generated api key names are random so this cannot be limited to the service at this time
         {
           name: "API_GATEWAY",
-          resources: [`arn:aws:apigateway:${region}::/apikeys/*`],
-          actions: ["apigateway:GET", "apigateway:PATCH"],
-        },
-        {
-          name: "API_GATEWAY_RESTAPIS",
-          prefix: `arn:aws:apigateway:${region}::/restapis`,
-          qualifiers: [`/*/deployments`],
-          actions: ["apigateway:GET"],
-        },
-        // The serverless-api-gateway-throttling requires PATCH access using the deploy user to update maxRequestsPerSecond and maxConcurrentRequests
-        {
-          name: "API_GATEWAY",
-          prefix: `arn:aws:apigateway:${region}::/restapis/*/stages`,
-          qualifiers: [`*`],
+          resources: [`arn:aws:apigateway:${region}::*`],
           actions: ["apigateway:GET", "apigateway:PATCH", "apigateway:POST"],
         },
         {
