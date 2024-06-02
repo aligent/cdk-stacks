@@ -257,6 +257,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           qualifiers: [`${serviceName}*`],
           actions: [
             "sns:GetTopicAttributes",
+            "sns:SetTopicAttributes",
             "sns:CreateTopic",
             "sns:DeleteTopic",
             "sns:Subscribe",
