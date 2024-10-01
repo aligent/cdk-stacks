@@ -471,7 +471,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           name: "LAMBDA",
           prefix: `arn:aws:lambda:${region}:${accountId}:function:`,
           qualifiers: [`${serviceName}*`],
-          actions: ["lambda:GetFunction", "lambda:InvokeFunction"],
+          actions: ["lambda:GetFunction", "lambda:InvokeFunction", "lambda:ListTags"],
         },
         {
           name: "IAM",
