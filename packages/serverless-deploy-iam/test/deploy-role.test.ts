@@ -108,7 +108,11 @@ describe("Deploy user policy", () => {
         PolicyDocument: {
           Statement: arrayWith(
             objectLike({
-              Action: ["lambda:GetFunction", "lambda:InvokeFunction"],
+              Action: [
+                "lambda:GetFunction",
+                "lambda:InvokeFunction",
+                "lambda:ListTags",
+              ],
               Effect: "Allow",
               Resource: [
                 {

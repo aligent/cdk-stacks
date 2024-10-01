@@ -166,6 +166,7 @@ export class ServiceDeployIAM extends cdk.Stack {
             "iam:GetRole",
             "iam:DeleteRole",
             "iam:UpdateRole",
+            "iam:TagRole",
             "iam:GetRolePolicy",
             "iam:DeleteRolePolicy",
             "iam:PutRolePolicy",
@@ -476,7 +477,11 @@ export class ServiceDeployIAM extends cdk.Stack {
           name: "LAMBDA",
           prefix: `arn:aws:lambda:${region}:${accountId}:function:`,
           qualifiers: [`${serviceName}*`],
-          actions: ["lambda:GetFunction", "lambda:InvokeFunction"],
+          actions: [
+            "lambda:GetFunction",
+            "lambda:InvokeFunction",
+            "lambda:ListTags",
+          ],
         },
         {
           name: "IAM",
