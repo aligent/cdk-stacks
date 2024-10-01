@@ -84,7 +84,7 @@ export class ServiceDeployIAM extends cdk.Stack {
       type: new Role(this, `ServiceRole-v${version}`, {
         assumedBy: new CompositePrincipal(
           new ServicePrincipal("cloudformation.amazonaws.com"),
-          new ServicePrincipal("lambda.amazonaws.com"),
+          new ServicePrincipal("lambda.amazonaws.com")
         ),
       }),
       policies: [
@@ -534,7 +534,7 @@ export class ServiceDeployIAM extends cdk.Stack {
               type: "String",
               description: `Custom qualifier values provided for ${policy.name}`,
               default: PARAMETER_HASH,
-            }),
+            })
           );
         }
 
@@ -547,7 +547,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           ServiceDeployIAM.formatResourceQualifier(
             policy.name,
             policy.prefix || "",
-            policy.qualifiers || [],
+            policy.qualifiers || []
           );
 
         store.type.addToPolicy(new PolicyStatement(policy));
@@ -604,7 +604,7 @@ export class ServiceDeployIAM extends cdk.Stack {
   static formatResourceQualifier(
     serviceName: string,
     prefix: string,
-    qualifiers: string[],
+    qualifiers: string[]
   ): string[] {
     let delimiter = "/";
     switch (serviceName) {
