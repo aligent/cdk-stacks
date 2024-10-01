@@ -173,6 +173,8 @@ export class ServiceDeployIAM extends cdk.Stack {
             "iam:DetachRolePolicy",
             "iam:AttachRolePolicy",
             "iam:UpdateAssumeRolePolicy",
+            "iam:TagRole",
+            "iam:UntagRole",
           ],
         },
         {
@@ -184,6 +186,10 @@ export class ServiceDeployIAM extends cdk.Stack {
             "dynamodb:CreateTable",
             "dynamodb:UpdateTable",
             "dynamodb:DeleteTable",
+            "dynamodb:ListTagsOfResource",
+            "dynamodb:TagResource",
+            "dynamodb:UntagResource",
+            "dynamodb:*TimeToLive",
           ],
         },
         {
@@ -236,7 +242,6 @@ export class ServiceDeployIAM extends cdk.Stack {
           actions: [
             "scheduler:GetScheduleGroup",
             "scheduler:CreateScheduleGroup",
-            "scheduler:UpdateScheduleGroup",
             "scheduler:DeleteScheduleGroup",
             "scheduler:TagResource",
             "scheduler:ListTagsForResource",
@@ -253,6 +258,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           qualifiers: [`${serviceName}*`],
           actions: [
             "sns:GetTopicAttributes",
+            "sns:SetTopicAttributes",
             "sns:CreateTopic",
             "sns:DeleteTopic",
             "sns:Subscribe",
@@ -503,20 +509,7 @@ export class ServiceDeployIAM extends cdk.Stack {
         // Generated api key names are random so this cannot be limited to the service at this time
         {
           name: "API_GATEWAY",
-          resources: [`arn:aws:apigateway:${region}::/apikeys/*`],
-          actions: ["apigateway:GET", "apigateway:PATCH"],
-        },
-        {
-          name: "API_GATEWAY_RESTAPIS",
-          prefix: `arn:aws:apigateway:${region}::/restapis`,
-          qualifiers: [`/*/deployments`],
-          actions: ["apigateway:GET"],
-        },
-        // The serverless-api-gateway-throttling requires PATCH access using the deploy user to update maxRequestsPerSecond and maxConcurrentRequests
-        {
-          name: "API_GATEWAY",
-          prefix: `arn:aws:apigateway:${region}::/restapis/*/stages`,
-          qualifiers: [`*`],
+          resources: [`arn:aws:apigateway:${region}::*`],
           actions: ["apigateway:GET", "apigateway:PATCH", "apigateway:POST"],
         },
         {
@@ -540,7 +533,7 @@ export class ServiceDeployIAM extends cdk.Stack {
             new CfnParameter(this, parameterName, {
               type: "String",
               description: `Custom qualifier values provided for ${policy.name}`,
-              default: "",
+              default: PARAMETER_HASH,
             }),
           );
         }
