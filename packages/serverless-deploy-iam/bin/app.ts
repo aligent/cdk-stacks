@@ -148,6 +148,7 @@ export class ServiceDeployIAM extends cdk.Stack {
             "lambda:ListEventSourceMappings",
             "lambda:CreateEventSourceMapping",
             "lambda:DeleteEventSourceMapping",
+            "lambda:TagResource",
           ],
         },
         {
