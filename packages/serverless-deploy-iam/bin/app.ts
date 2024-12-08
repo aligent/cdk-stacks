@@ -145,12 +145,9 @@ export class ServiceDeployIAM extends cdk.Stack {
           resources: [
             `arn:aws:lambda:${region}:${accountId}:event-source-mapping:*`,
           ],
-          actions: ["lambda:TagResource"],
-        },
-        {
-          name: "LAMBDA",
-          resources: [`*`],
           actions: [
+            "lambda:TagResource",
+            "lambda:UntagResource",
             "lambda:GetEventSourceMapping",
             "lambda:ListEventSourceMappings",
             "lambda:CreateEventSourceMapping",
