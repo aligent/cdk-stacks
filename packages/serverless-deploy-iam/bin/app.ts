@@ -444,7 +444,7 @@ export class ServiceDeployIAM extends cdk.Stack {
       policies: [
         dummyPolicy,
         {
-          name: "IAM",
+          name: "SERVICE_LINKED_ROLE",
           actions: ["iam:CreateServiceLinkedRole"],
           resources: [
             `arn:aws:iam::${accountId}:role/aws-service-role/ops.apigateway.amazonaws.com/AWSServiceRoleForAPIGateway`,
