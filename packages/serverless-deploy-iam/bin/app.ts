@@ -502,6 +502,14 @@ export class ServiceDeployIAM extends cdk.Stack {
           actions: ["iam:PassRole"],
         },
         {
+          name: "IAM",
+          prefix: `arn:aws:iam::${accountId}:role`,
+          qualifiers: [
+            "aws-service-role/ops.apigateway.amazonaws.com/AWSServiceRoleForAPIGateway",
+          ],
+          actions: ["iam:CreateServiceLinkedRole"],
+        },
+        {
           name: "S3",
           prefix: `arn:aws:s3:::`,
           qualifiers: [`${serviceName}*`, `${serviceName}*/*`],
