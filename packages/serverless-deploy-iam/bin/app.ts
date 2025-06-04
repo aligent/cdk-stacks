@@ -514,6 +514,7 @@ export class ServiceDeployIAM extends cdk.Stack {
           prefix: `arn:aws:s3:::`,
           qualifiers: [`${serviceName}*`, `${serviceName}*/*`],
           actions: [
+            "s3:CreateBucket",
             "s3:ListBucket",
             "s3:DeleteObject",
             "s3:PutObject",
