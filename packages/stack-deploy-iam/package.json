@@ -2,7 +2,7 @@
   "name": "stack-deploy-iam",
   "version": "2.0.0",
   "bin": {
-    "app": "bin/app.js"
+    "app": "bin/app.ts"
   },
   "scripts": {
     "build": "tsc",
