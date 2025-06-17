@@ -2,12 +2,11 @@
   "name": "stack-deploy-iam",
   "version": "2.0.0",
   "bin": {
-    "stack-deploy-iam": "bin/stack-deploy-iam.js"
+    "app": "bin/app.js"
   },
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest",
     "cdk": "cdk"
   },
   "devDependencies": {
