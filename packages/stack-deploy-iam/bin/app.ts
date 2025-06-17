@@ -1,20 +1,21 @@
 #!/usr/bin/env node
-import * as cdk from "@aws-cdk/core";
-import * as ssm from "@aws-cdk/aws-ssm";
-import { PolicyStatement, Effect, Group, User } from "@aws-cdk/aws-iam";
+import * as cdk from 'aws-cdk-lib';
+import { Stack, StackProps } from "aws-cdk-lib";
+import { Group, PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
+import { Construct } from "constructs";
 
 const STACK_NAME = process.env.STACK_NAME;
 const STACK_SUFFIX = "-deploy-iam";
-
-class StackDeployUser extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+class StackDeployUser extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     // Version will be used for auditing which role is being used by projects.
     // This should only be updated for BREAKING changes.
     const version = "1";
-    const accountId = cdk.Stack.of(this).account;
-    const stackName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX, "");
+    const accountId = Stack.of(this).account;
+    const stackName = Stack.of(this).stackName.replace(STACK_SUFFIX, "");
 
     const bootstrapCfnIamRole = [
       `arn:aws:iam::${accountId}:role/cdk-cfn-exec-role-${accountId}-*`,
@@ -23,7 +24,7 @@ class StackDeployUser extends cdk.Stack {
       `arn:aws:iam::${accountId}:role/cdk-*-role-${accountId}-*`,
     ];
 
-    const deployUser = new User(this, "DeployUser", {
+    const deployUser = new cdk.aws_iam.User(this, "DeployUser", {
       userName: `${stackName}-deployer`,
     });
 
@@ -60,7 +61,7 @@ class StackDeployUser extends cdk.Stack {
 
     const parameterName = `/stack-deploy-user/${stackName}/version`;
 
-    new ssm.StringParameter(this, "StackDeployIAMVersion", {
+    new StringParameter(this, "StackDeployIAMVersion", {
       parameterName: parameterName,
       description: "The version of the stack-deploy-user resources",
       stringValue: version,

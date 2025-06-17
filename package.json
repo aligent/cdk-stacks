@@ -5,7 +5,8 @@
   "description": "A collection of CDK stacks",
   "workspaces": {
     "packages": [
-      "packages/*"
+      "packages/eventbridge-iam",
+      "packages/serverless-deploy-iam"
     ]
   },
   "repository": {
