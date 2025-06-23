@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+
+import { App, CfnParameter, CfnOutput, Stack, StackProps } from "aws-cdk-lib";
 import {
   CompositePrincipal,
   Conditions,
@@ -8,10 +10,9 @@ import {
   Role,
   ServicePrincipal,
   User,
-} from "@aws-cdk/aws-iam";
-import * as ssm from "@aws-cdk/aws-ssm";
-import * as cdk from "@aws-cdk/core";
-import { CfnParameter } from "@aws-cdk/core";
+} from "aws-cdk-lib/aws-iam";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
+import { Construct } from "constructs";
 
 interface Policy {
   name: string;
@@ -48,24 +49,24 @@ const ENABLE_VPC_PERMISSIONS = process.env.ENABLE_VPC_PERMISSIONS === "1";
 const PARAMETER_HASH = process.env.PARAMETER_HASH
   ? process.env.PARAMETER_HASH
   : "";
-export class ServiceDeployIAM extends cdk.Stack {
+export class ServiceDeployIAM extends Stack {
   private policyStores: PolicyStore[];
 
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     // Version will be used for auditing which role is being used by projects.
     // This should only be updated for BREAKING changes.
     const version = "1";
-    const serviceName = cdk.Stack.of(this).stackName.replace(STACK_SUFFIX, "");
+    const serviceName = Stack.of(this).stackName.replace(STACK_SUFFIX, "");
 
-    const sharedVPCParameter = new cdk.CfnParameter(this, `sharedVpcId`, {
+    const sharedVPCParameter = new CfnParameter(this, `sharedVpcId`, {
       description: `Shared VPC ID`,
       default: "",
     });
 
-    const accountId = cdk.Stack.of(this).account;
-    const region = cdk.Stack.of(this).region;
+    const accountId = Stack.of(this).account;
+    const region = Stack.of(this).region;
 
     // CloudFormation doesn't detect a change when parameters are modified
     // This is due to CloudFormation linking parameters by reference
@@ -586,26 +587,26 @@ export class ServiceDeployIAM extends cdk.Stack {
       ? EXPORT_PREFIX.concat("-")
       : EXPORT_PREFIX;
 
-    new cdk.CfnOutput(this, `${export_prefix}DeployUserName`, {
+    new CfnOutput(this, `${export_prefix}DeployUserName`, {
       description: "PublisherUser",
       value: deployUser.userName,
       exportName: `${export_prefix}serverless-deployer-username`,
     });
 
-    new cdk.CfnOutput(this, `${export_prefix}DeployRoleArn`, {
+    new CfnOutput(this, `${export_prefix}DeployRoleArn`, {
       value: (serviceRole.type as Role).roleArn,
       description: "The ARN of the CloudFormation service role",
       exportName: `${export_prefix}serverless-deployer-role-arn`,
     });
 
-    new cdk.CfnOutput(this, `${export_prefix}Version`, {
+    new CfnOutput(this, `${export_prefix}Version`, {
       value: version,
       description:
         "The version of the resources that are currently provisioned in this stack",
       exportName: `${export_prefix}cdk-stack-version`,
     });
 
-    new cdk.CfnOutput(this, `${export_prefix}ParameterHash`, {
+    new CfnOutput(this, `${export_prefix}ParameterHash`, {
       value: version,
       description: "A hash of the parameter values provided.",
       exportName: `${export_prefix}parameter-hash`,
@@ -613,7 +614,7 @@ export class ServiceDeployIAM extends cdk.Stack {
 
     const parameterName = `/serverless-deploy-iam/${serviceName}/version`;
 
-    new ssm.StringParameter(this, "ServerlessDeployIAMVersion", {
+    new StringParameter(this, "ServerlessDeployIAMVersion", {
       parameterName: parameterName,
       description: "The version of the serverless-deploy-iam resources",
       stringValue: version,
@@ -655,7 +656,7 @@ export class ServiceDeployIAM extends cdk.Stack {
   }
 }
 
-const app = new cdk.App();
+const app = new App();
 new ServiceDeployIAM(app, `${SERVICE_NAME}${STACK_SUFFIX}`, {
   description:
     "This stack includes IAM resources needed to deploy Serverless apps into this environment",
