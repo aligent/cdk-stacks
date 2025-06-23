@@ -1,7 +1,6 @@
 #!/usr/bin/env node
-import * as cdk from 'aws-cdk-lib';
-import { Stack, StackProps } from "aws-cdk-lib";
-import { Group, PolicyStatement, Effect } from "aws-cdk-lib/aws-iam";
+import { App, CfnOutput, Stack, StackProps } from "aws-cdk-lib";
+import { Effect, Group, PolicyStatement, User } from "aws-cdk-lib/aws-iam";
 import { StringParameter } from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 
@@ -24,7 +23,7 @@ class StackDeployUser extends Stack {
       `arn:aws:iam::${accountId}:role/cdk-*-role-${accountId}-*`,
     ];
 
-    const deployUser = new cdk.aws_iam.User(this, "DeployUser", {
+    const deployUser = new User(this, "DeployUser", {
       userName: `${stackName}-deployer`,
     });
 
@@ -48,12 +47,12 @@ class StackDeployUser extends Stack {
 
     deployUser.addToGroup(deployGroup);
 
-    new cdk.CfnOutput(this, "DeployUserName", {
+    new CfnOutput(this, "DeployUserName", {
       description: "PublisherUser",
       value: deployUser.userName,
     });
 
-    new cdk.CfnOutput(this, "Version", {
+    new CfnOutput(this, "Version", {
       value: version,
       description:
         "The version of the resources that are currently provisioned in this stack",
@@ -69,7 +68,7 @@ class StackDeployUser extends Stack {
   }
 }
 
-const app = new cdk.App();
+const app = new App();
 new StackDeployUser(app, `${STACK_NAME}${STACK_SUFFIX}`, {
   description: `This stack provisions an IAM user needed to deploy the ${STACK_NAME} CDK stack into this environment`,
 });
