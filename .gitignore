@@ -7,6 +7,9 @@
 node_modules/
 dist/
 
+*.d.ts
+*.js
+
 # Compiled Java class files
 *.class
 
@@ -54,5 +57,9 @@ Thumbs.db
 .cdk.staging
 cdk.out
 
-*.d.ts
-*.js
+
+# Parcel build directories
+.cache
+.build
+
+coverage

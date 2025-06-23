@@ -14,17 +14,6 @@ Additional permissions should be added to this stack and feature flagged rather 
 
 This tool is philosophically similar to the [AWS CDK Bootstrap](https://github.com/aws/aws-cdk/blob/master/design/cdk-bootstrap.md) but specific to Aligent services IAM resources.
 
-### Aliased Command
-This ensures all the commands are run inside the serverless-deploy-iam docker container so that you don't need clone the repo.
-
-Add the following to your .bashrc file:
-```
-alias serverless-deploy-iam='docker run --rm -it --volume $HOME/.aws:/home/node/.aws aligent/cdk-serverless-deploy-iam'
-```
-
-You will then need to reload your bashrc file, either by running `. ~/.bashrc` or starting a new terminal session.
-
-To deploy the IAM role, provide a profile and service name: `serverless-deploy-iam --profile <profile name> --service <service name>`.
 
 ### Cloning the repo
 #### Parameters

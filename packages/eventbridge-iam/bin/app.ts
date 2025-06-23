@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-import * as cdk from "@aws-cdk/core";
-import * as ssm from "@aws-cdk/aws-ssm";
-import { PolicyStatement, Effect, Group, User } from "@aws-cdk/aws-iam";
+import { App, Stack, StackProps } from "aws-cdk-lib";
+import { Effect, Group, PolicyStatement, User } from "aws-cdk-lib/aws-iam";
+import { StringParameter } from "aws-cdk-lib/aws-ssm";
+import { Construct } from "constructs";
 
 const EVENT_SOURCE = process.env.EVENT_SOURCE;
 if (!EVENT_SOURCE) {
   throw Error("No EVENT_SOURCE defined");
 }
 const HYPHENATED_EVENT_SOURCE = EVENT_SOURCE.split(".").join("-");
-class EventBridgeIAM extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+export class EventBridgeIAM extends Stack {
+  constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
     // Version will be used for auditing which role is being used by projects.
@@ -46,7 +47,7 @@ class EventBridgeIAM extends cdk.Stack {
 
     const parameterName = `/eventbridge-user/${HYPHENATED_EVENT_SOURCE}/version`;
 
-    new ssm.StringParameter(this, "EventBridgeIAMVersion", {
+    new StringParameter(this, "EventBridgeIAMVersion", {
       parameterName: parameterName,
       description: "The version of the eventbridge-iam resources",
       stringValue: version,
@@ -54,8 +55,8 @@ class EventBridgeIAM extends cdk.Stack {
   }
 }
 
-const app = new cdk.App();
+const app = new App();
 new EventBridgeIAM(app, `eventbridge-iam-${HYPHENATED_EVENT_SOURCE}`, {
   description:
-    "This stack provisions an IAM user with privilage to post events into the default EventBride",
+    "This stack provisions an IAM user with privilege to post events into the default EventBride",
 });
