@@ -26,5 +26,8 @@
     "constructs": "^10.0.0",
     "esbuild": "^0.14.3",
     "source-map-support": "^0.5.16"
+  },
+  "overrides": {
+    "form-data@<=4.0.4": "4.0.4"
   }
 }
