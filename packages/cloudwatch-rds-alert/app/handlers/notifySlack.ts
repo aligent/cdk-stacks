@@ -1,21 +1,21 @@
 import { SNSEvent, Context } from "aws-lambda";
 import axios, { AxiosResponse } from "axios";
+import { SSMClient, GetParameterCommand } from "@aws-sdk/client-ssm";
 
 const WEBHOOK_URL_PARAMETER = process.env.WEBHOOK_URL_PARAMETER as string;
 const ALERT_USERNAME = process.env.ALERT_USERNAME as string;
 const ALERT_CHANNEL = process.env.ALERT_CHANNEL as string;
 
-import * as AWS from "aws-sdk";
-const SSM = new AWS.SSM();
-// var responseFromSSM = null;
-const parameter = {
-  Name: WEBHOOK_URL_PARAMETER,
-  WithDecryption: true,
-};
+const ssmClient = new SSMClient({});
 
 let WEBHOOK_URL: string;
 const init = async () => {
-  WEBHOOK_URL = (await SSM.getParameter(parameter).promise()).Parameter.Value;
+  const command = new GetParameterCommand({
+    Name: WEBHOOK_URL_PARAMETER,
+    WithDecryption: true,
+  });
+  const response = await ssmClient.send(command);
+  WEBHOOK_URL = response.Parameter?.Value as string;
   console.log(typeof WEBHOOK_URL);
 };
 const initPromise = init();
