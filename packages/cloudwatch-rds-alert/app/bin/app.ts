@@ -74,7 +74,7 @@ export class CloudwatchRDSAlertStack extends Stack {
       {
         memorySize: 1024,
         timeout: Duration.seconds(5),
-        runtime: aws_lambda.Runtime.NODEJS_14_X,
+        runtime: aws_lambda.Runtime.NODEJS_20_X,
         handler: "handler",
         entry: path.join(__dirname, `/../handlers/notifySlack.ts`),
         environment: {
